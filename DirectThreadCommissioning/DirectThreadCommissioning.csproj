@@ -58,6 +58,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Platforms\Android\Resources\raw\ca.der" />
 	  <None Remove="Platforms\Android\Resources\raw\caCopy.pem" />
 	</ItemGroup>
 

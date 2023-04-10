@@ -13,6 +13,8 @@ public partial class DeviceListPage : ContentPage
     internal BleThreadDevice selectedItem = null;
     internal int minRssi = 0;
 
+    public const int maxItemsInList = 15;
+
     ObservableCollection<BleThreadDevice> VisibleDevices = new ObservableCollection<BleThreadDevice>();
     internal ObservableCollection<BleThreadDevice> GetVisibleDevices { get { return VisibleDevices; } }
 
@@ -41,6 +43,7 @@ public partial class DeviceListPage : ContentPage
 
         bleScan = await Bluetooth.RequestLEScanAsync(BleScanOptions);
 
+        VisibleDevices.Clear();
         cviCollection.SelectedItem = null;      // No item selected when the page is re-appearing
     }
 
@@ -74,29 +77,55 @@ public partial class DeviceListPage : ContentPage
             {
                 VisibleDevices[iFound].Rssi = e.Rssi;
             }
-            else
+            else if(iPositionBelowStrogerRssi < maxItemsInList)
             {
                 string device_name = String.IsNullOrEmpty(e.Name) ? "<no name>" : e.Name;
                 var theNewDev = new BleThreadDevice() { Name = device_name, BluetoothDevice = e.Device, Rssi = e.Rssi };
+
+                if(VisibleDevices.Count >= maxItemsInList)
+                {
+                    VisibleDevices.RemoveAt(VisibleDevices.Count - 1);
+                }
 
                 VisibleDevices.Insert(iPositionBelowStrogerRssi, theNewDev);     // Insert item in main (UI) thread
             }
         });
     }
 
-    private void sldRange_ValueChanged(object sender, ValueChangedEventArgs e)
+    private async void sldRange_ValueChanged(object sender, ValueChangedEventArgs e)
     {
+        //BluetoothLEScanOptions BleScanOptions = new BluetoothLEScanOptions();
+
         if (sldRange == null) return;
+
+        Bluetooth.AdvertisementReceived -= Bluetooth_AdvertisementReceived;
+        
+        // iOS needs to restart scan for to show all device
+        if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
+        {
+            bleScan.Stop();
+        }
 
         minRssi = (int)(-sldRange.Value);
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            for (int i = 0; i < VisibleDevices.Count; i++)
+            for (int i = VisibleDevices.Count - 1; i >= 0; i--)
             {
                 if (VisibleDevices[i].Rssi < minRssi) VisibleDevices.RemoveAt(i);
             }
         });
+
+        Bluetooth.AdvertisementReceived += Bluetooth_AdvertisementReceived;
+
+        // iOS needs to restart scan for to show all device
+        if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
+        {
+            BluetoothLEScanOptions BleScanOptions = new BluetoothLEScanOptions();
+            
+            BleScanOptions.AcceptAllAdvertisements = true;
+            bleScan = await Bluetooth.RequestLEScanAsync(BleScanOptions);
+        }
     }
 
     private async void cviCollection_SelectionChanged(object sender, SelectionChangedEventArgs e)

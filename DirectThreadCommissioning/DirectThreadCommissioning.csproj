@@ -63,7 +63,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="InTheHand.BluetoothLE" Version="4.0.32" />
+		<PackageReference Include="InTheHand.BluetoothLE" Version="4.0.33" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
 	</ItemGroup>
 

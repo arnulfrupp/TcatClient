@@ -97,7 +97,6 @@ public partial class TerminalPage : ContentPage
             // await sslStream.AuthenticateAsServerAsync(theInstallerCert, true, false);
 
             // As client ....
-            await Task.Delay(2000);
             X509CertificateCollection theInstallerCerts = new X509CertificateCollection();
             theInstallerCerts.Add(theInstallerCert);
             await sslStream.AuthenticateAsClientAsync(null, theInstallerCerts, false);

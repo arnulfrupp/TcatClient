@@ -31,12 +31,17 @@ namespace DirectThreadCommissioning.Models
 
         public StringBuilder log_out = new(); 
         public int log_byte_count = 0;
-        private int log_direction = 0;    // 0=start, 1=out, -1=in
+        private int log_direction = 0;              // 0=start, 1=out, -1=in
+
+        public const int initialMtuSize = 23;       // ATT_MTU
+        public const int gattOverhead = 3;          // Three bytes overhead
+        public const int initialMaxPacketSize = initialMtuSize - gattOverhead;
+        
 
         public BleStream(BluetoothDevice aDevice)
         {
             bleDevice = aDevice;
-            maxPacketSize = 20;     // Minimum GATT MTU - 3 byte GATT overhead
+            maxPacketSize = initialMaxPacketSize;
 
             readQueue = new Queue<byte>();
             readSemaphore = new Semaphore(0, 1);
@@ -108,6 +113,12 @@ namespace DirectThreadCommissioning.Models
         public override async void Write(byte[] buffer, int offset, int count)
         {
             DateTime dateTime = DateTime.Now;
+
+            // Update maximum packet size
+            maxPacketSize = bleDevice.Gatt.Mtu - gattOverhead;
+
+            // bleDevice.Gatt.Mtu may deliever 0 on Android (see: https://github.com/inthehand/32feet/issues/222)
+            if (maxPacketSize < initialMaxPacketSize) maxPacketSize = initialMaxPacketSize;
 
             if (inWrite)
             {
@@ -206,6 +217,7 @@ namespace DirectThreadCommissioning.Models
 
             return true;
         }
+
 
         private void Disconnect()
         {

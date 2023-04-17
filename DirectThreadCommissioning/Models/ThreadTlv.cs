@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,9 @@ namespace DirectThreadCommissioning.Models
         {
             Command                 = 0,
             Status                  = 1,
-            ActiveDataset           = 2,
+            ActiveDataset           = 16,
+            Application             = 18,
+            Undefined               = 999
         };
 
         public enum TcatCommand
@@ -88,6 +91,11 @@ namespace DirectThreadCommissioning.Models
             DiscoverResponse        = 129
         };
 
+        // MeshCoP TLV lenght n = kMeshCopTlvTlvLen[type]
+        // n = 999  : TLV type invalid
+        // n > 0    : TLV data length = n
+        // n < 0    : TLV data length <= -n
+        // n = 0    : any TLV data lenght 
         private static int[] kMeshCopTlvTlvLen = {  3,  2,  8,-16,-16, 16,  4,  8,-16,  2,
                                                   -64,  2,  4,  0,  8,  2,  1,  0,  2,  8,
                                                     2, 16,999,999,999,999,999,999,999,999,
@@ -107,6 +115,18 @@ namespace DirectThreadCommissioning.Models
 
         public byte[] Data { get => data; set => data = value; }
         public TcatTlvType Type { get => type; set => type = value; }
+
+        public TcatTlv()
+        {
+            type = TcatTlvType.Undefined;
+            data = Array.Empty<byte>();
+        }
+
+        public TcatTlv(TcatTlvType aTcatTlvType, byte[] aData)
+        {
+            type = aTcatTlvType;
+            data = aData;
+        }
 
         public TcatTlv(TcatCommand aTcatCommand)
         {
@@ -143,7 +163,7 @@ namespace DirectThreadCommissioning.Models
             data = new byte[size + 2];
             data[0] = (byte)aMeshCopTlvType;
             data[1] = (byte)size;
-            data.CopyTo(aMeshCopData, 2);
+            aMeshCopData.CopyTo(data, 2);
         }
 
         public TcatTlv(TcatTlvType aTcatTlvType, MeshCopTlvType aMeshCopTlvType)
@@ -178,7 +198,7 @@ namespace DirectThreadCommissioning.Models
             channelTlv.data[4] = (byte)aChannel;
             panIdTlv.data[2] = (byte)(aPanId >> 8);
             panIdTlv.data[3] = (byte)aPanId;
-            networkkeyTlv.data.CopyTo(aNetworkkey, 2);
+            aNetworkkey.CopyTo(networkkeyTlv.data, 2);
 
             Merge(channelTlv);
             Merge(panIdTlv);
@@ -190,10 +210,51 @@ namespace DirectThreadCommissioning.Models
             if (aTcatTlv.type != type) throw new InvalidDataException("Cannot merge data from two different TLV types");
 
             byte[] bytes = new byte[data.Length + aTcatTlv.data.Length];
-            bytes.CopyTo(data, 0);
-            bytes.CopyTo(aTcatTlv.data, data.Length);
+            data.CopyTo(bytes, 0);
+            aTcatTlv.data.CopyTo(bytes, data.Length);
             data = bytes;
         }
+
+        public byte?[] FindTlv(MeshCopTlvType aMeshCopTlvType)
+        {
+            int index = 0;
+
+            if(type != TcatTlvType.ActiveDataset) throw new InvalidDataException("Encoded TCAT type does not contain MeshCoP TLVs");
+
+            while(index + 1 < data.Length)
+            {
+                if (data[index] == (byte)aMeshCopTlvType)
+                {
+                    int len = data[index + 1];
+                    byte?[] result = new byte?[len];
+
+                    index += 2;
+
+                    if (len == 255) throw new InvalidDataException("Malformed MeshCoP TLV (loo long)");
+                    if (data.Length  < index + len) throw new InvalidDataException("Malformed MeshCoP TLV");
+
+                    for(int i = 0; i < len; i++) 
+                    {
+                        result[i] = data[index + i];
+                    }
+
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public ushort? FindTlvAsUShort(MeshCopTlvType aMeshCopTlvType)
+        {
+            byte?[] result = FindTlv(aMeshCopTlvType);
+
+            if (result == null) return null;
+            if (result.Length != 2) throw new InvalidDataException("MeshCoP TLV does not contain unsigned short value");
+
+            return (ushort?)(result[0] >> 8 + result[1]);
+        }
+
 
         public byte[] GetBytes()
         {
@@ -202,7 +263,7 @@ namespace DirectThreadCommissioning.Models
 
             bytes[0] = (byte)type;
 
-            if (data.Length == 4)
+            if (headerLen == 4)
             {
                 bytes[1] = 255;
                 bytes[2] = (byte)(data.Length >> 8);
@@ -210,7 +271,7 @@ namespace DirectThreadCommissioning.Models
             }
             else bytes[1] = (byte)data.Length;
             
-            bytes.CopyTo(data, headerLen);
+            data.CopyTo(bytes, headerLen);
 
             return bytes;
         }

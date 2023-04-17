@@ -5,8 +5,6 @@ using System.Text;
 
 using InTheHand.Bluetooth;
 using DirectThreadCommissioning.Models;
-
-
 namespace DirectThreadCommissioning.Views;
 
 [QueryProperty(nameof(SelectedDevice), "SelectedDevice")]
@@ -14,6 +12,7 @@ public partial class TerminalPage : ContentPage
 {
     BleStream bleStream = null;
     SslStream sslStream = null;
+    TlvStreamWatcher tlvStreamWatcher = null;
     BluetoothDevice selectedDevice;
 
     static X509Certificate2 theCaCert = null;
@@ -113,8 +112,8 @@ public partial class TerminalPage : ContentPage
 
     override async protected void OnAppearing()
     {
-        byte[] buf = new byte[20];
-        int len;
+        //byte[] buf = new byte[20];
+        //int len;
 
         //edtTerminal.Text += "--> OnAppearing()" + "\n";
 
@@ -184,12 +183,8 @@ public partial class TerminalPage : ContentPage
 
                 edtTerminal.Text += "### Authenticated (TEST) ###" + "\n";
 
-                while ((len = await sslStream.ReadAsync(buf, 0, 20)) > 0)
-                {
-                    edtTerminal.Text += Encoding.Default.GetString(buf, 0, len);
-                }
-
-                edtTerminal.Text += "\nTERMINATED\n";
+                tlvStreamWatcher = new TlvStreamWatcher(sslStream);
+                tlvStreamWatcher.TlvAvailable += OnTlvReceived;
             }
         }
     }
@@ -197,12 +192,39 @@ public partial class TerminalPage : ContentPage
     override protected void OnDisappearing()
     {
         //edtTerminal.Text += "--> OnDisappearing()" + "\n";
-        //bleStream.Disconnect();
+    }
+
+    protected override bool OnBackButtonPressed()
+    {
+        ClosingTasks();
+
+        return base.OnBackButtonPressed();
+    }
+
+    private void ClosingTasks()
+    {
+        tlvStreamWatcher.Detach();
+        sslStream.Close();
+        tlvStreamWatcher = null;
+        bleStream = null;
+        sslStream = null;
+    }
+
+    async void OnTlvReceived(object sender, TlvStreamWatcher.TlvAvailableEventArgs e)
+    {
+        if (e.Tlv.Type == TcatTlv.TcatTlvType.Application)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                edtTerminal.Text += Encoding.Default.GetString(e.Tlv.Data) + "\r\n";
+            });
+        }
+        else await DisplayAlert("Alert", "Unexpected TLV recaived", "OK");
     }
 
     private async void btnClose_Clicked(object sender, EventArgs e)
     {
-        sslStream.Close();
+        ClosingTasks();
         await Shell.Current.GoToAsync("..");
     }
 
@@ -215,11 +237,25 @@ public partial class TerminalPage : ContentPage
 
     private void btnEnter_Clicked(object sender, EventArgs e)
     {
+        TcatTlv tlv = new(TcatTlv.TcatTlvType.Application, Encoding.ASCII.GetBytes(entInput.Text));
+        byte[] tlvBytes = tlv.GetBytes();  
+
         if (sslStream == null) return;
+        if (!sslStream.IsAuthenticated) return;
 
-        byte[] buf = Encoding.ASCII.GetBytes(entInput.Text + "\r\n");
+        sslStream.Write(tlvBytes, 0, tlvBytes.Length);
+    }
 
-        sslStream.Write(buf, 0, buf.Length);
+    private void btnCommission_Clicked(object sender, EventArgs e)
+    {
+        byte[] networkkey = new byte[16] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+        TcatTlv tlv = new(25, 0xF997, networkkey);
+        byte[] tlvBytes = tlv.GetBytes();
+
+        if (sslStream == null) return;
+        if (!sslStream.IsAuthenticated) return;
+
+        sslStream.Write(tlvBytes, 0, tlvBytes.Length);
     }
 
     private void entInput_Focused(object sender, FocusEventArgs e)

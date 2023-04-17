@@ -5,6 +5,9 @@ using System.Text;
 
 using InTheHand.Bluetooth;
 using DirectThreadCommissioning.Models;
+using static DirectThreadCommissioning.Models.TcatTlv;
+using System.Data;
+
 namespace DirectThreadCommissioning.Views;
 
 [QueryProperty(nameof(SelectedDevice), "SelectedDevice")]
@@ -210,16 +213,23 @@ public partial class TerminalPage : ContentPage
         sslStream = null;
     }
 
-    async void OnTlvReceived(object sender, TlvStreamWatcher.TlvAvailableEventArgs e)
+    void OnTlvReceived(object sender, TlvStreamWatcher.TlvAvailableEventArgs e)
     {
-        if (e.Tlv.Type == TcatTlv.TcatTlvType.Application)
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
-            MainThread.BeginInvokeOnMainThread(() =>
+            if (e.Tlv.Type == TcatTlvType.Application)
             {
                 edtTerminal.Text += Encoding.Default.GetString(e.Tlv.Data) + "\r\n";
-            });
-        }
-        else await DisplayAlert("Alert", "Unexpected TLV recaived", "OK");
+            }
+            else if (e.Tlv.Type == TcatTlvType.Response)
+            {
+                edtTerminal.Text +=  "Respose code: " + e.Tlv.Data[0].ToString() + "\r\n";
+            }
+            else
+            {
+                await DisplayAlert("Alert", "Unexpected TCAT TLV", "OK");
+            }
+        });
     }
 
     private async void btnClose_Clicked(object sender, EventArgs e)
@@ -248,8 +258,40 @@ public partial class TerminalPage : ContentPage
 
     private void btnCommission_Clicked(object sender, EventArgs e)
     {
-        byte[] networkkey = new byte[16] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
-        TcatTlv tlv = new(25, 0xF997, networkkey);
+        //byte[] networkkey = new byte[16] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+        //TcatTlv tlv = new(25, 0xF997, networkkey);
+        //byte[] tlvBytes = tlv.GetBytes();
+
+        byte[] dataset = new byte[] { 0x0e, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x12, 0x35, 0x06, 0x00, 0x04,
+                                      0x00, 0x1f, 0xff, 0xe0, 0x02, 0x08, 0xef, 0x13, 0x98, 0xc2, 0xfd, 0x50, 0x4b, 0x67, 0x07, 0x08, 0xfd, 0x35, 0x34,
+                                      0x41, 0x33, 0xd1, 0xd7, 0x3e, 0x05, 0x10, 0xfd, 0xa7, 0xc7, 0x71, 0xa2, 0x72, 0x02, 0xe2, 0x32, 0xec, 0xd0, 0x4c,
+                                      0xf9, 0x34, 0xf4, 0x76, 0x03, 0x0f, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x68, 0x72, 0x65, 0x61, 0x64, 0x2d, 0x63, 0x36,
+                                      0x34, 0x65, 0x01, 0x02, 0xc6, 0x4e, 0x04, 0x10, 0x5e, 0x9b, 0x9b, 0x36, 0x0f, 0x80, 0xb8, 0x8b, 0xe2, 0x60, 0x3f,
+                                      0xb0, 0x13, 0x5c, 0x8d, 0x65, 0x0c, 0x04, 0x02, 0xa0, 0xf7, 0xf8 };
+
+        TcatTlv tlv = new(TcatTlvType.ActiveDataset, dataset);
+        byte[] tlvBytes = tlv.GetBytes();
+
+        if (sslStream == null) return;
+        if (!sslStream.IsAuthenticated) return;
+
+        sslStream.Write(tlvBytes, 0, tlvBytes.Length);
+    }
+
+    private void btnThreadOn_Clicked(object sender, EventArgs e)
+    {
+        TcatTlv tlv = new(TcatCommand.ThreadStart);
+        byte[] tlvBytes = tlv.GetBytes();
+
+        if (sslStream == null) return;
+        if (!sslStream.IsAuthenticated) return;
+
+        sslStream.Write(tlvBytes, 0, tlvBytes.Length);
+    }
+
+    private void btnThreadOff_Clicked(object sender, EventArgs e)
+    {
+        TcatTlv tlv = new(TcatCommand.ThreadStop);
         byte[] tlvBytes = tlv.GetBytes();
 
         if (sslStream == null) return;

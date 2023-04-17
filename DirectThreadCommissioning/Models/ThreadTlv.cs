@@ -16,7 +16,7 @@ namespace DirectThreadCommissioning.Models
         public enum TcatTlvType
         {
             Command                 = 0,
-            Status                  = 1,
+            Response                = 1,
             ActiveDataset           = 16,
             Application             = 18,
             Undefined               = 999
@@ -24,8 +24,9 @@ namespace DirectThreadCommissioning.Models
 
         public enum TcatCommand
         {
-            StopThread              = 0,
-            StartThread             = 1
+            Terminate               = 0,
+            ThreadStart             = 1,
+            ThreadStop              = 2
         };
 
         public enum TcatStatus
@@ -134,10 +135,10 @@ namespace DirectThreadCommissioning.Models
             data = new byte[] { (byte)aTcatCommand };
         }
 
-        public TcatTlv(TcatStatus aStatus)
+        public TcatTlv(TcatStatus aResponse)
         {
-            type = TcatTlvType.Status;
-            data = new byte[] { (byte)aStatus };
+            type = TcatTlvType.Response;
+            data = new byte[] { (byte)aResponse };
         }
 
         public TcatTlv(TcatTlvType aTcatTlvType, MeshCopTlvType aMeshCopTlvType, byte[] aMeshCopData)

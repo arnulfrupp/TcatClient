@@ -12,8 +12,8 @@
         <Button Grid.Row="2" Grid.Column="1" x:Name="btnClose" Text="Close" Clicked="btnClose_Clicked" />
         <Button Grid.Row="2" Grid.Column="2" x:Name="btnEnter" Text="Send" Clicked="btnEnter_Clicked" />
         <Button Grid.Row="3" Grid.Column="0" x:Name="btnCommission" Text="Commission" Clicked="btnCommission_Clicked" />
-        <Button Grid.Row="3" Grid.Column="1" x:Name="btnThreadOn" Text="Thread On"  />
-        <Button Grid.Row="3" Grid.Column="2" x:Name="tbnThreadOff" Text="Thread Off"  />
+        <Button Grid.Row="3" Grid.Column="1" x:Name="btnThreadOn" Text="Thread On" Clicked="btnThreadOn_Clicked"  />
+        <Button Grid.Row="3" Grid.Column="2" x:Name="btnThreadOff" Text="Thread Off" Clicked="btnThreadOff_Clicked" />
     </Grid>
     
 </ContentPage>

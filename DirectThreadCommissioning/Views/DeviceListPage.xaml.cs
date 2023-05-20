@@ -61,6 +61,7 @@ public partial class DeviceListPage : ContentPage
 
         if (e.Device == null) return;    // List only Bluetooth devices
         if (e.Rssi < minRssi) return;
+        if (String.IsNullOrEmpty(e.Name)) return;
 
         MainThread.BeginInvokeOnMainThread(() =>
         {

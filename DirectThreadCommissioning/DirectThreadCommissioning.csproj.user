@@ -4,7 +4,7 @@
     <IsFirstTimeProjectOpen>False</IsFirstTimeProjectOpen>
     <ActiveDebugFramework>net7.0-windows10.0.19041.0</ActiveDebugFramework>
     <ActiveDebugProfile>Windows Machine</ActiveDebugProfile>
-    <SelectedPlatformGroup>PhysicalDevice</SelectedPlatformGroup>
+    <SelectedPlatformGroup>LocalDevice</SelectedPlatformGroup>
     <DeveloperId>C5J43YJ86Y</DeveloperId>
     <DevelopmentTeamId>C5J43YJ86Y</DevelopmentTeamId>
   </PropertyGroup>

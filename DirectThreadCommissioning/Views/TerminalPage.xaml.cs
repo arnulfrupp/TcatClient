@@ -125,24 +125,26 @@ public partial class TerminalPage : ContentPage
         string theInstallerCertPrivKeyPem = "";
         string theCaCertPem = "";
 
-        // Use build in certificates for testing       
-        
+        // Use build in certificates for testing
+
         theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
-        theInstallerCertPem += "MIIBoDCCAUegAwIBAgIEESIzATAKBggqhkjOPQQDAjBaMQswCQYDVQQGEwJERTER\n";
+        theInstallerCertPem += "MIICCTCCAa6gAwIBAgIEESIzAjAKBggqhkjOPQQDAjBaMQswCQYDVQQGEwJERTER\n";
         theInstallerCertPem += "MA8GA1UEBxMIR2FyY2hpbmcxDDAKBgNVBAsTA1NUQTERMA8GA1UEChMITXlWZW5k\n";
-        theInstallerCertPem += "b3IxFzAVBgNVBAMTDm9wdG90cm9uaWMuY29tMB4XDTIzMDMyNDIzMTkxNFoXDTI0\n";
-        theInstallerCertPem += "MDMyNDIzMTkxNFowVzELMAkGA1UEBhMCREUxETAPBgNVBAcTCEdhcmNoaW5nMQww\n";
+        theInstallerCertPem += "b3IxFzAVBgNVBAMTDm9wdG90cm9uaWMuY29tMB4XDTIzMDUyMDIxMzMyOFoXDTI0\n";
+        theInstallerCertPem += "MDUyMDIxMzMyOFowVzELMAkGA1UEBhMCREUxETAPBgNVBAcTCEdhcmNoaW5nMQww\n";
         theInstallerCertPem += "CgYDVQQLEwNTVEExETAPBgNVBAoTCE15VmVuZG9yMRQwEgYDVQQDEwtKb2huIE1p\n";
-        theInstallerCertPem += "bGxlcjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOOXQ/Y9pLcC4e/SpAm0xcDG\n";
-        theInstallerCertPem += "ekBqyQOLcWesxOiyJzQLC2bBSsmlJqFtBu7grejvRv2GgulL2VWPyH1ODCGJ6KQw\n";
-        theInstallerCertPem += "CgYIKoZIzj0EAwIDRwAwRAIgdIrDtE3IkTv4CP5TjFX0hbXsXvspfvmI81j5NvOQ\n";
-        theInstallerCertPem += "H/ACIGtWqguQR7hlvv/3l7T86th/xC4IxmYH6i8rAL7tjR4w\n";
+        theInstallerCertPem += "bGxlcjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABPlCMHt0fXYwtOkoeYSpRRdQ\n";
+        theInstallerCertPem += "Jt+aLABsdyO7yVabdCgus8g/q1sLM4XkW28qaYdXFEiJWKAPqu/WuwndewxPaSOj\n";
+        theInstallerCertPem += "ZTBjMBIGCSsGAQQBgt8qAwQFgB8/AwMwGQYJKwYBBAGC3yoEBAxTb21lIE5ldHdv\n";
+        theInstallerCertPem += "cmswFQYJKwYBBAGC3yoFBAgAESIzRFVmdzAbBgkrBgEEAYLfKgYEDlVua25vd24g\n";
+        theInstallerCertPem += "RG9tYWluMAoGCCqGSM49BAMCA0kAMEYCIQDNScjM1JXXGBue/8WqTnb323xglRCY\n";
+        theInstallerCertPem += "4CfO+32zITwWRwIhAOX5/vnMY4XESza4Nn1GZcIf35b/HE4D4mLdNuQN8+O8\n";
         theInstallerCertPem += "-----END CERTIFICATE-----\n";
 
         theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
-        theInstallerCertPrivKeyPem += "MHcCAQEEIA/Xvs1wT7+GGp+/+hj8nrAJyMVgFMkxf6mswP6zKrovoAoGCCqGSM49\n";
-        theInstallerCertPrivKeyPem += "AwEHoUQDQgAE45dD9j2ktwLh79KkCbTFwMZ6QGrJA4txZ6zE6LInNAsLZsFKyaUm\n";
-        theInstallerCertPrivKeyPem += "oW0G7uCt6O9G/YaC6UvZVY/IfU4MIYnopA==\n";
+        theInstallerCertPrivKeyPem += "MHcCAQEEIJvp3ToUOg/W2dzRhHc7vJRxbOhiClAk6zjJwZJNMVlkoAoGCCqGSM49\n";
+        theInstallerCertPrivKeyPem += "AwEHoUQDQgAE+UIwe3R9djC06Sh5hKlFF1Am35osAGx3I7vJVpt0KC6zyD+rWwsz\n";
+        theInstallerCertPrivKeyPem += "heRbbypph1cUSIlYoA+q79a7Cd17DE9pIw==\n";
         theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
 
         theCaCertPem += "-----BEGIN CERTIFICATE-----\n";
@@ -158,6 +160,7 @@ public partial class TerminalPage : ContentPage
         theCaCertPem += "CYoQyDj2d498XeWYkSVuAiBz+GSRnTmdCFzQKfL8/ma7QaNdXihKYrWUdqvlynVV\n";
         theCaCertPem += "MQ==\n";
         theCaCertPem += "-----END CERTIFICATE-----\n";
+
 
         if (theInstallerCert == null || theCaCert == null)
         {
@@ -184,7 +187,7 @@ public partial class TerminalPage : ContentPage
             if (await Connect())
             {
 
-                edtTerminal.Text += "### Authenticated (TEST) ###" + "\n";
+                edtTerminal.Text += "### Authenticated (TEST-2) ###" + "\n";
 
                 tlvStreamWatcher = new TlvStreamWatcher(sslStream);
                 tlvStreamWatcher.TlvAvailable += OnTlvReceived;

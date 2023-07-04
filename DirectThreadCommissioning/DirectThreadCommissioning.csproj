@@ -31,6 +31,15 @@
 
 		<!-- Windows 10 issue: https://github.com/dotnet/maui/issues/12080 -->
 		<WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+		<GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+		<PackageCertificateThumbprint>6B39487191EAC0702ABB95D6E93C737EC4E61016</PackageCertificateThumbprint>
+		<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+		<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+		<GenerateTestArtifacts>True</GenerateTestArtifacts>
+		<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+		<AppInstallerUri>https://1drv.ms/f/s!Avz-rEdfSTvBjZAwopWrsEr4SPNwHA%3fe=DFo46n</AppInstallerUri>
 		
 	</PropertyGroup>
 

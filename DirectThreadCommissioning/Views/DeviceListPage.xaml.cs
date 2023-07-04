@@ -32,11 +32,13 @@ public partial class DeviceListPage : ContentPage
         // Request user permission on startup
         bool bleAvailabe = await BleThreadDevice.GetBleAvailabilityAsync();
 
+        /*
         if (!bleAvailabe)
         {
             await DisplayAlert("Bluetooth", "Bluetooth not available", "Ok");
             return;
         }
+        */
 
         Bluetooth.AdvertisementReceived += Bluetooth_AdvertisementReceived;
         BleScanOptions.AcceptAllAdvertisements = true;

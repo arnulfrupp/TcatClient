@@ -7,6 +7,10 @@
     <SelectedPlatformGroup>LocalDevice</SelectedPlatformGroup>
     <DeveloperId>C5J43YJ86Y</DeveloperId>
     <DevelopmentTeamId>C5J43YJ86Y</DevelopmentTeamId>
+    <UapAppxPackageBuildMode>SideloadOnly</UapAppxPackageBuildMode>
+    <AppxShowAllApps>False</AppxShowAllApps>
+    <_LastSelectedProfileId>MSIX-win10-x86.pubxml</_LastSelectedProfileId>
+    <PackageOptionalProjectsInIdeBuilds>False</PackageOptionalProjectsInIdeBuilds>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)'=='iOS'">
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>

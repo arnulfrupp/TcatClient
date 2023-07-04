@@ -24,6 +24,8 @@ public partial class App : Application
         window.Width = newWidth;
         window.Height = newHeight;
 
+        window.Title = "Thread Commissioning";
+
         return window;
     }
 }

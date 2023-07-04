@@ -1,3 +1,8 @@
 .vs
 DirectThreadCommissioning/bin
 DirectThreadCommissioning/obj
+DirectThreadCommissioning/properties
+TcatCli/bin
+TcatCli/obj
+*.pfx
+*.user

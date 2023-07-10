@@ -2,7 +2,7 @@
 
 Client for Thread commissioning using TCAT
 
-## DirectThreadCommissioning (MAUI)
+## Project 1: DirectThreadCommissioning (MAUI)
 
 MAUI based client for Thread commissioning using TCAT
 Runs on Windows, iOS, Android, MacOS (Mac Catalyst - untested)
@@ -13,7 +13,7 @@ Works best with Visual Studio.
 Load solution and RUN. Follow instructions how to setup devicws.
 
 
-## TcatCli
+## Project 2: TcatCli (CLI)
 
 Command line client for Thread commissioning using TCAT.
 Works best with command line development tools.

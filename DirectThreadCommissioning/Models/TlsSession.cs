@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography;
@@ -7,21 +8,19 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
-using TcatCli.Models;
 using DirectThreadCommissioning.Models;
 
-namespace TcatCli.Models
+namespace DirectThreadCommissioning.Models
 {
     internal class TlsSession
     {
-        private BleStream bleStream = null;
+        private Stream bleStream = null;
         private SslStream sslStream = null;
         private BuildInCertificate theCert = null;
-        private BleThreadDevice bleThreadDevice = null;
 
-        public TlsSession(BleThreadDevice aBleThreadDevice)
+        public TlsSession(Stream aBleStream)
         {
-            bleThreadDevice = aBleThreadDevice;
+            bleStream = aBleStream;
             theCert = new();
         }
 
@@ -30,9 +29,19 @@ namespace TcatCli.Models
             return sslStream;
         }
 
-        public async Task Disconnect()
+        public void Write(byte[] buffer, int offset, int count)
         {
-            await bleStream.Disconnect();
+            sslStream.Write(buffer, offset, count);
+        }
+
+        public void Write(byte[] buffer)
+        {
+            sslStream.Write(buffer);
+        }
+
+        public bool IsAuthenticated()
+        {
+            return sslStream.IsAuthenticated;
         }
 
         private X509Certificate OnLocalCertificateSelection(object sender, string targetHost, X509CertificateCollection localCertificates, X509Certificate remoteCertificate, string[] acceptableIssuers)
@@ -73,19 +82,9 @@ namespace TcatCli.Models
             return result;
         }
 
-        public async Task<bool> Connect()
+        public async Task<bool> Open()
         {
-            bleStream = new(bleThreadDevice.ThreadDevice);
-
-            if(theCert.GetInstallerCert() == null || bleStream == null) return false;
-
-            if (await bleStream.ConnectAsync() == false)
-            {
-                Console.WriteLine("BLE connection error");
-                return false;
-            }
-
-            Console.WriteLine("BLE connection successful");
+            if(bleStream == null) return false;
 
             sslStream = new SslStream(bleStream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), new LocalCertificateSelectionCallback(OnLocalCertificateSelection));
 
@@ -107,6 +106,12 @@ namespace TcatCli.Models
             }
 
             return true;
+        }
+
+        public void Close()
+        {
+            sslStream.Close();
+            bleStream.Close();
         }
     }
 }

@@ -11,8 +11,11 @@
  	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Include="..\DirectThreadCommissioning\Models\ThreadTlv.cs" Link="ThreadTlv.cs" />
-		<Compile Include="..\DirectThreadCommissioning\Models\TlvStreamWatcher.cs" Link="TlvStreamWatcher.cs" />
+		<Compile Include="..\DirectThreadCommissioning\Models\BleThreadDevice.cs" />
+		<Compile Include="..\DirectThreadCommissioning\Models\ThreadTlv.cs" />
+		<Compile Include="..\DirectThreadCommissioning\Models\TlvStreamWatcher.cs" />
+		<Compile Include="..\DirectThreadCommissioning\Models\BuildInCertificate.cs" />
+		<Compile Include="..\DirectThreadCommissioning\Models\TlsSession.cs" />
 	</ItemGroup>
 
 </Project>

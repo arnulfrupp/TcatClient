@@ -4,16 +4,18 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 
-using InTheHand.Bluetooth;
 
 
 namespace DirectThreadCommissioning.Models
 {
-    internal class BleThreadDevice : INotifyPropertyChanged
+    internal abstract class BleThreadDevice : INotifyPropertyChanged
     {
-        static private bool BleAvailability = false;
+
+        public abstract Task<Stream> Connect(); 
+        public abstract Task Disconnect(); 
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -25,7 +27,6 @@ namespace DirectThreadCommissioning.Models
             }
         }
 
-        public BluetoothDevice BluetoothDevice { get; set; }
         public string Name { get; set; }
 
         public short rssi;
@@ -41,20 +42,6 @@ namespace DirectThreadCommissioning.Models
                     RaiseProperChanged();
                 }
             }
-        }
-
-        static async internal Task<bool> GetBleAvailabilityAsync()
-        {
-            try
-            {
-                BleAvailability = await Bluetooth.GetAvailabilityAsync();
-            }
-            catch (Exception)
-            {
-                BleAvailability = false;
-            }
-
-            return BleAvailability;
         }
     }
 }

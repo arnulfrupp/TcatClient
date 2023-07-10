@@ -9,9 +9,6 @@ using System.Threading.Tasks;
 using Linux.Bluetooth;
 using Linux.Bluetooth.Extensions;
 
-using TcatCli.Models;
-
-
 namespace TcatCli.Models
 {
 
@@ -44,7 +41,6 @@ namespace TcatCli.Models
         public BleStream(Device aDevice)
         {
             bleDevice = aDevice;
-           
             maxPacketSize = initialMaxPacketSize;
 
             readQueue = new Queue<byte>();

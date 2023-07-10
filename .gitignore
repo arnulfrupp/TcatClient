@@ -1,4 +1,6 @@
 .vs
+.vscode
+.unotes
 DirectThreadCommissioning/bin
 DirectThreadCommissioning/obj
 DirectThreadCommissioning/properties

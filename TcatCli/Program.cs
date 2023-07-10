@@ -1,56 +1,75 @@
-﻿using DirectThreadCommissioning.Models;
-using InTheHand.Bluetooth;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Security;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace TcatCli
+using TcatCli.Models;
+using DirectThreadCommissioning.Models;
+
+namespace TcatCli // Note: actual namespace depends on the project name.
 {
     internal class Program
     {
-        internal BluetoothLEScan? bleScan = null;
+        static TlsSession tlsSession = null;
+        static TlvStreamWatcher tlvStreamWatcher = null;
 
-        static async Task<bool> WaitForBleAdapter()
+
+        private static void OnTlvReceived(object sender, TlvStreamWatcher.TlvAvailableEventArgs e)
         {
-            bool bleAvailabe = false;
-            int n = 5;
-
-            // Request user permission on startup
-            while (!bleAvailabe && n-- > 0)
+            if (e.Tlv.Type == TcatTlv.TcatTlvType.Application)
             {
-                bleAvailabe = await BleThreadDevice.GetBleAvailabilityAsync();
-
-                if (!bleAvailabe)
-                {
-                    Console.WriteLine("Waiting for Bluetooth adapter");
-                    Thread.Sleep(1000);
-                }
+                Console.WriteLine(Encoding.Default.GetString(e.Tlv.Data));
             }
-
-            if (!bleAvailabe)
+            else if (e.Tlv.Type == TcatTlv.TcatTlvType.Response)
             {
-                Console.WriteLine("Bluetooth adapter not found");
-                return false;
+                Console.WriteLine("Respose code: " + e.Tlv.Data[0].ToString());
             }
+            else
+            {
+                Console.WriteLine("Alert: Unexpected TCAT TLV", "OK");
+            }
+    }
 
-            Console.WriteLine("Blutooth adapter found");
-
-            return true;
-        }
-
-        private static async Task<bool> TestDeviceDiscovery()
+        static async Task<int> Main(string[] args)
         {
-            var discoveredDevices = await Bluetooth.ScanForDevicesAsync();
-            Console.WriteLine($"found {discoveredDevices?.Count} devices");
-            return discoveredDevices?.Count > 0;
-        }
+            Console.WriteLine("TcatCli");
+            Console.WriteLine("=======");
 
-        static async Task Main(string[] args)
-        {
-            BluetoothLEScanOptions BleScanOptions = new BluetoothLEScanOptions();
+            BleThreadDevice device = new();
+            string scanFilter;
 
-            //if (!await WaitForBleAdapter()) return;
+            if(args.Length > 0) scanFilter = args[0];
+            else scanFilter = "Thread BLE";
 
-            var discoveryTask = TestDeviceDiscovery();
-            discoveryTask.Wait();
+            if(await device.Scan(scanFilter, 15) == false) return 1;
 
-        }
+            tlsSession = new(device);
+            if(await tlsSession.Connect() == false) return 1;
+        
+            Console.WriteLine("### Authenticated ###" + "\n");
+
+            tlvStreamWatcher = new TlvStreamWatcher(tlsSession.GetTlsStream());
+            tlvStreamWatcher.TlvAvailable += OnTlvReceived;
+
+            TcatTlv tlv = new(TcatTlv.TcatTlvType.Application, Encoding.ASCII.GetBytes("Hallo Welt"));
+            byte[] tlvBytes = tlv.GetBytes();  
+
+            if (!tlsSession.GetTlsStream().IsAuthenticated) return 1;
+
+            tlsSession.GetTlsStream().Write(tlvBytes, 0, tlvBytes.Length);
+
+            await Task.Delay(3000);
+
+            tlvStreamWatcher.Detach();
+            await tlsSession.Disconnect();
+            Console.WriteLine("Closed");
+                    
+            return 0;       
+         
+        }       
     }
 }

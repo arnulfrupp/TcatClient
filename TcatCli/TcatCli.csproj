@@ -11,11 +11,11 @@
  	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Include="..\DirectThreadCommissioning\Models\BleThreadDevice.cs" />
-		<Compile Include="..\DirectThreadCommissioning\Models\ThreadTlv.cs" />
-		<Compile Include="..\DirectThreadCommissioning\Models\TlvStreamWatcher.cs" />
-		<Compile Include="..\DirectThreadCommissioning\Models\BuildInCertificate.cs" />
-		<Compile Include="..\DirectThreadCommissioning\Models\TlsSession.cs" />
+		<Compile Include="..\TcatMaui\Models\BleThreadDevice.cs" />
+		<Compile Include="..\TcatMaui\Models\ThreadTlv.cs" />
+		<Compile Include="..\TcatMaui\Models\TlvStreamWatcher.cs" />
+		<Compile Include="..\TcatMaui\Models\BuildInCertificate.cs" />
+		<Compile Include="..\TcatMaui\Models\TlsSession.cs" />
 	</ItemGroup>
 
 </Project>

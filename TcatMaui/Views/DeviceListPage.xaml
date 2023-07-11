@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TcatMaui.Views.DeviceListPage"
+             Title="Select Device">
+    
+    <Grid RowDefinitions="1*,Auto" BackgroundColor="LightGray">
+
+        <CollectionView x:Name="cviCollection" Grid.Row="0" SelectionMode="Single" ItemsSource="{Binding VisibleDevices}" 
+                        SelectionChanged="cviCollection_SelectionChanged" Margin="10">
+
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border BackgroundColor="White" Stroke="BlacK"  StrokeThickness="1"  Padding="5" HorizontalOptions="Fill">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="5,5,5,5"/>
+                        </Border.StrokeShape>
+                        <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, 1*">
+                            <Label Grid.ColumnSpan="2" Grid.Row="0" Text="{Binding Name}" FontAttributes="Bold"/>
+                            <Label Grid.Column="0" Grid.Row="1" Text="Rssi: "/>
+                            <Label Grid.Column="1" Grid.Row="1" Text="{Binding Rssi}"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <StackLayout Orientation="Horizontal" Grid.Row="1" BackgroundColor="White" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+            <Label Text="Near" Margin="20"/>
+            <Slider x:Name="sldRange" Minimum="50" Maximum="120" MinimumTrackColor="Orange" MaximumTrackColor="LightGrey" 
+                   ThumbColor="Orange" ValueChanged="sldRange_ValueChanged" VerticalOptions="Center" HorizontalOptions="FillAndExpand"
+                   Value="85"/>
+            <Label Text="Far" Margin="20" />
+        </StackLayout>
+
+    </Grid>
+
+</ContentPage>

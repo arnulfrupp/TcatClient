@@ -1,9 +1,9 @@
 .vs
 .vscode
 .unotes
-DirectThreadCommissioning/bin
-DirectThreadCommissioning/obj
-DirectThreadCommissioning/properties
+TcatMaui/bin
+TcatMaui/obj
+TcatMaui/properties
 TcatCli/bin
 TcatCli/obj
 *.pfx

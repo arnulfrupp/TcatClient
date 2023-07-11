@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Linux.Bluetooth;
 using Linux.Bluetooth.Extensions;
 
-using DirectThreadCommissioning.Models; 
+using TcatMaui.Models; 
 
 namespace TcatCli.Models
 {

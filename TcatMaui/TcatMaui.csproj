@@ -32,8 +32,7 @@
 		<!-- Windows 10 issue: https://github.com/dotnet/maui/issues/12080 -->
 		<WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
 		<GenerateAppInstallerFile>True</GenerateAppInstallerFile>
-		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-		<PackageCertificateThumbprint>6B39487191EAC0702ABB95D6E93C737EC4E61016</PackageCertificateThumbprint>
+		<AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
 		<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
 		<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
 		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
@@ -44,12 +43,13 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
-	  <CodesignKey>Apple Development: Created via API (C5J43YJ86Y)</CodesignKey>
+	  <CodesignKey>Apple Development: Created via API (82KF4T2F4R)</CodesignKey>
 	  <CodesignProvision>VS: WildCard Development</CodesignProvision>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<MauiIcon Include="Resources\AppIcon\appicon_thread.svg" ForegroundFile="Resources\AppIcon\appiconfg_thread.svg" Color="#512BD4" />
+		<!-- Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" />
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash_thread.svg" Color="#512BD4" BaseSize="128,128" />
@@ -68,6 +68,7 @@
 	<ItemGroup>
 	  <None Remove="Platforms\Android\Resources\raw\ca.der" />
 	  <None Remove="Platforms\Android\Resources\raw\caCopy.pem" />
+	  <None Remove="Resources\AppIcon\appicon.svg" />
 	</ItemGroup>
 
 	<ItemGroup>

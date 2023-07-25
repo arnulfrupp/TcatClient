@@ -3,7 +3,6 @@
 .unotes
 TcatMaui/bin
 TcatMaui/obj
-TcatMaui/properties
 TcatCli/bin
 TcatCli/obj
 *.pfx

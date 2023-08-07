@@ -1,40 +1,81 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using System.ComponentModel;
+
 
 namespace TcatMaui.Models
 {
     internal class TcatTlv
     {
+        /**
+         * TCAT TLV Types.
+         * 
+         */
+
         public enum TcatTlvType
         {
-            Command                 = 0,
-            Response                = 1,
-            ActiveDataset           = 16,
-            Application             = 18,
-            Undefined               = 999
+            // Command Class General
+            Undefined                       = 0,    // undefiened TCAT TLV
+            ResponseWithStatus              = 1,    // TCAT response with status value TLV
+            ResponseWithPayload             = 2,    // TCAT response with payload TLV
+            ResponseEvent                   = 3,    // TCAT response event TLV (reserved)
+            GetNetworkName                  = 8,    // TCAT network name query TLV
+            Disconnect                      = 9,    // TCAT disconnect request TLV
+            Ping                            = 10,   // TCAT ping request TLV
+            GetDeviceId                     = 11,   // TCAT device ID query TLV
+            GetExtendedPanID                = 12,   // TCAT extended PAN ID query TLV
+            PresentPskdHash                 = 16,   // TCAT commissioner rights elevation request TLV using PSKd hash
+            PresentPskcHash                 = 17,   // TCAT commissioner rights elevation request TLV using PSKc hash
+            PresentInstallCodeHash          = 18,   // TCAT commissioner rights elevation request TLV using install code
+            RequestRandomNumChallenge       = 19,   // TCAT random number challenge query TLV
+            RequestPskdHash                 = 20,   // TCAT PSKd hash request TLV
+
+            // Command Class Commissioning
+            SetActiveOperationalDataset     = 32,   // TCAT active operational dataset TLV
+            SetActiveOperationalDataset1    = 33,   // TCAT active operational dataset alterative #1 TLV
+            GetProvissioningTlvs            = 36,   // TCAT provisioning TLVs query TLV
+            GetCommissionerCertificate      = 37,   // TCAT commissioner certificate query TLV
+            GetDiagnosticTlvs               = 38,   // TCAT diagnostics TLVs query TLV
+            StartThreadInterface            = 39,   // TCAT start thread interface request TLV
+            StopThreadInterface             = 40,   // TCAT stop thread interface request TLV
+
+            // Command Class Extraction
+            GetActiveOperationalDataset     = 64,   // TCAT active oerational dataset query TLV
+            GetActiveOperationalDataset1    = 65,   // TCAT active oerational dataset alterative #1 query TLV
+
+            // Command Class Decommissioning
+            Decommission                    = 96,   // TCAT decommission request TLV
+
+            // Command Class Application
+            SelectApplicationLayerUdp       = 128,  // TCAT select UDP protocol application layer request TLV
+            SelectApplicationLayerTcp       = 129,  // TCAT select TCP protocol application layer request TLV
+            SendApplicationData             = 130,  // TCAT send application data TLV
+            SendVendorSpecificData          = 159,  // TCAT send vendor specific command or data TLV
+
+            // Command Class CCM
+            SetLDevIdOperationalCert        = 160,  // TCAT LDevID operational certificate TLV
+            SetLDevIdPrivateKey             = 161,  // TCAT LDevID operational certificate pricate key TLV
+            SetDomainCaCert                 = 162,  // TCAT domain CA certificate TLV
         };
 
-        public enum TcatCommand
-        {
-            Terminate               = 0,
-            ThreadStart             = 1,
-            ThreadStop              = 2
-        };
+
+        /**
+         * TCAT Response Types.
+         *
+         */
 
         public enum TcatStatus
         {
-            Ok                      = 0,
-            Error                   = 1
+            TcatSuccess         = 0,            // Command or request was successfully processed
+            TcatUnsupported     = 1,            // Requested command or received TLV is not supported
+            TcatParseError      = 2,            // Request / command could not be parsed correctly
+            TcatValueError      = 3,            // The value of the transmitted TLV has an error
+            TcatGeneralError    = 4,            // An error not matching any other category occurred
+            TcatBusy            = 5,            // Command cannot be executed because the resource is busy
+            TcatUndefined       = 6,            // The requested value, data or service is not defined (currently) or not present
+            TcatHashError       = 7,            // The hash value presented by the commissioner was incorrect
+            TcatUnauthorized    = 8,            // Sender does not have sufficient authorization for the given command
         };
+
+
 
         public enum MeshCopTlvType
         {
@@ -118,11 +159,34 @@ namespace TcatMaui.Models
         public byte[] Data { get => data; set => data = value; }
         public TcatTlvType Type { get => type; set => type = value; }
 
+
+        /**
+         * Create empty TCAT TLV
+         *
+         */
+
         public TcatTlv()
         {
             type = TcatTlvType.Undefined;
             data = Array.Empty<byte>();
         }
+
+
+        /**
+         * Create TCAT TLV without data
+         *
+         */
+
+        public TcatTlv(TcatTlvType aTcatTlvType)
+        {
+            type = aTcatTlvType;
+            data = Array.Empty<byte>();
+        }
+
+        /**
+         * Create TCAT TLV with data
+         *
+         */
 
         public TcatTlv(TcatTlvType aTcatTlvType, byte[] aData)
         {
@@ -130,17 +194,23 @@ namespace TcatMaui.Models
             data = aData;
         }
 
-        public TcatTlv(TcatCommand aTcatCommand)
-        {
-            type = TcatTlvType.Command;
-            data = new byte[] { (byte)aTcatCommand };
-        }
+
+        /**
+         * Create TCAT response TLV with status
+         *
+         */
 
         public TcatTlv(TcatStatus aResponse)
         {
-            type = TcatTlvType.Response;
+            type = TcatTlvType.ResponseWithStatus;
             data = new byte[] { (byte)aResponse };
         }
+
+
+        /**
+         * Create TCAT TLV with a MeshCoP having arbitrary data payload
+         *
+         */
 
         public TcatTlv(TcatTlvType aTcatTlvType, MeshCopTlvType aMeshCopTlvType, byte[] aMeshCopData)
         {
@@ -168,6 +238,12 @@ namespace TcatMaui.Models
             aMeshCopData.CopyTo(data, 2);
         }
 
+
+        /**
+         * Create TCAT TLV with a MeshCoP TLV having a fixed data lenght
+         *
+         */
+
         public TcatTlv(TcatTlvType aTcatTlvType, MeshCopTlvType aMeshCopTlvType)
         {
             if ((int)aMeshCopTlvType > 129) throw new InvalidEnumArgumentException("MeshCoP TLV type");
@@ -182,9 +258,15 @@ namespace TcatMaui.Models
             data[1] = (byte)size;
         }
 
+
+        /**
+         * Create TCAT TLV with MeshCoP TLVs setting the channel, PANID and Network Key.
+         *
+         */
+
         public TcatTlv(ushort aChannel, ushort aPanId, byte[] aNetworkkey)
         {
-            type = TcatTlvType.ActiveDataset;
+            type = TcatTlvType.SetActiveOperationalDataset;
             data = Array.Empty<byte>();
 
             if (aChannel < 11 || aChannel > 26) throw new InvalidDataException("invalid network channel");
@@ -207,6 +289,13 @@ namespace TcatMaui.Models
             Merge(networkkeyTlv);
         }
 
+
+        /**
+         * Merge two TCAT TLVs of the same type into one with combined payload
+         * This methord is typically used to join two TCAT TLVs containing MeshCoP TLVs as payload
+         *
+         */
+
         public void Merge(TcatTlv aTcatTlv)
         {
             if (aTcatTlv.type != type) throw new InvalidDataException("Cannot merge data from two different TLV types");
@@ -217,11 +306,17 @@ namespace TcatMaui.Models
             data = bytes;
         }
 
+
+        /**
+         * Find a specific MeshCoP TLV inside a TCAT TLV payload and extract the value
+         *
+         */
+
         public byte?[] FindTlv(MeshCopTlvType aMeshCopTlvType)
         {
             int index = 0;
 
-            if(type != TcatTlvType.ActiveDataset) throw new InvalidDataException("Encoded TCAT type does not contain MeshCoP TLVs");
+            if(type != TcatTlvType.SetActiveOperationalDataset) throw new InvalidDataException("Encoded TCAT type does not contain MeshCoP TLVs");
 
             while(index + 1 < data.Length)
             {
@@ -247,6 +342,12 @@ namespace TcatMaui.Models
             return null;
         }
 
+
+        /**
+         * Find a specific MeshCoP TLV inside a TCAT TLV payload and extract the value as unsigned short
+         *
+         */
+
         public ushort? FindTlvAsUShort(MeshCopTlvType aMeshCopTlvType)
         {
             byte?[] result = FindTlv(aMeshCopTlvType);
@@ -257,6 +358,11 @@ namespace TcatMaui.Models
             return (ushort?)(result[0] >> 8 + result[1]);
         }
 
+
+        /**
+         * Get the TLV byte array
+         *
+         */
 
         public byte[] GetBytes()
         {

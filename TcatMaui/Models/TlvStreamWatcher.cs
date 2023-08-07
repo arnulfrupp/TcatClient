@@ -75,7 +75,17 @@ namespace TcatMaui.Models
             {
                 nextTlv.Data = new byte[tlvHeaderBuffer[0] >> 8 + tlvHeaderBuffer[1]];
                 writeIndex = 0;
-                stream.BeginRead(nextTlv.Data, writeIndex, nextTlv.Data.Length, new AsyncCallback(ReadDataCallback), null);
+
+                if (nextTlv.Data.Length > 0)
+                {
+                    stream.BeginRead(nextTlv.Data, writeIndex, nextTlv.Data.Length, new AsyncCallback(ReadDataCallback), null);
+                }
+                else
+                {
+                    TlvAvailable?.Invoke(this, new TlvAvailableEventArgs(nextTlv));
+                    nextTlv = null;
+                    WatchNext();
+                }
             }
         }
 
@@ -101,12 +111,22 @@ namespace TcatMaui.Models
                 {
                     nextTlv.Data = new byte[tlvHeaderBuffer[1]];
                     writeIndex = 0;
-                    stream.BeginRead(nextTlv.Data, writeIndex, nextTlv.Data.Length, new AsyncCallback(ReadDataCallback), null);
+
+                    if (nextTlv.Data.Length > 0)
+                    {
+                        stream.BeginRead(nextTlv.Data, writeIndex, nextTlv.Data.Length, new AsyncCallback(ReadDataCallback), null);
+                    }
+                    else
+                    {
+                        TlvAvailable?.Invoke(this, new TlvAvailableEventArgs(nextTlv));
+                        nextTlv = null;
+                        WatchNext();
+                    }
                 }
                 else
                 {
                     writeIndex = 0;
-                    stream.BeginRead(tlvHeaderBuffer, writeIndex, 2 - writeIndex, new AsyncCallback(ReadExtHeaderCallback), null);
+                    stream.BeginRead(tlvHeaderBuffer, writeIndex, 2, new AsyncCallback(ReadExtHeaderCallback), null);
                 }
             }
         }

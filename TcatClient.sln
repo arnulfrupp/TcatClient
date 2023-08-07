@@ -5,8 +5,8 @@ VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TcatMaui", "TcatMaui\TcatMaui.csproj", "{FDA93DC6-3B31-4E76-80E8-D3651D4100D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TcatCli", "TcatCli\TcatCli.csproj", "{805DEFBA-FD11-462B-A3B9-9EBAADFE200B}"
-EndProject
+#Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TcatCli", "TcatCli\TcatCli.csproj", "{805DEFBA-FD11-462B-A3B9-9EBAADFE200B}"
+#EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

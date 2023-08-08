@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 using TcatCli.Models;
 using TcatMaui.Models;
+using static TcatMaui.Models.TcatTlv;
 
 namespace TcatCli
 {
@@ -20,11 +21,15 @@ namespace TcatCli
 
         private static void OnTlvReceived(object sender, TlvStreamWatcher.TlvAvailableEventArgs e)
         {
-            if (e.Tlv.Type == TcatTlv.TcatTlvType.Application)
+            if (e.Tlv.Type == TcatTlvType.SendApplicationData)
             {
-                Console.WriteLine(Encoding.Default.GetString(e.Tlv.Data));
+                Console.WriteLine("Application data: " + Encoding.Default.GetString(e.Tlv.Data));
             }
-            else if (e.Tlv.Type == TcatTlv.TcatTlvType.Response)
+            else if (e.Tlv.Type == TcatTlvType.ResponseWithPayload)
+            {
+                Console.WriteLine("Response payload: " + Encoding.Default.GetString(e.Tlv.Data));
+            }
+            else if (e.Tlv.Type == TcatTlvType.ResponseWithStatus)
             {
                 Console.WriteLine("Respose code: " + e.Tlv.Data[0].ToString());
             }
@@ -68,31 +73,38 @@ namespace TcatCli
 
             while(input != "e")
             {
-                Console.Write("'d' = dataset, 'a' = application data, '0' = Thread On, '1'= Thread off, 'e'=exit: ");
+                Console.Write("'d' = dataset, 'n' = networkkey/panid/channel 'a' = application data, '0' = Thread On, '1'= Thread off, 'e'=exit: ");
                 input = Console.ReadLine();
                 Console.WriteLine("");
 
                 switch(input)
                 {
                     case "d":
-                        tlv = new(TcatTlv.TcatTlvType.ActiveDataset, dataset);
+                        tlv = new(TcatTlvType.SetActiveOperationalDataset, dataset);
+                        tlsSession.Write(tlv.GetBytes());
+                    break;
+
+                    case "n":
+                        byte[] networkkey = new byte[16] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+                        tlv = new(25, 0xF997, networkkey);
                         tlsSession.Write(tlv.GetBytes());
                     break;
 
                     case "a":
-                        tlv = new(TcatTlv.TcatTlvType.Application, Encoding.ASCII.GetBytes("Hello World"));
+                        tlv = new(TcatTlvType.SendApplicationData, Encoding.ASCII.GetBytes("Hello World"));
                         tlsSession.Write(tlv.GetBytes());
                     break;
 
                     case "0":
-                        tlv = new(TcatTlv.TcatCommand.ThreadStop);
+                        tlv = new(TcatTlvType.StopThreadInterface);
                         tlsSession.Write(tlv.GetBytes());
                     break;
 
                     case "1":
-                        tlv = new(TcatTlv.TcatCommand.ThreadStart);
+                        tlv = new(TcatTlvType.StartThreadInterface);
                         tlsSession.Write(tlv.GetBytes());
                     break;
+
                 }
 
                 if(input != "e") await Task.Delay(500);

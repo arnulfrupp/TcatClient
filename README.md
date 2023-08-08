@@ -2,7 +2,7 @@
 
 Client for Thread commissioning using TCAT
 
-## Project 1: DirectThreadCommissioning (MAUI)
+## Project 1: TcatMaui (MAUI)
 
 MAUI based client for Thread commissioning using TCAT
 Runs on Windows, iOS, Android, MacOS (Mac Catalyst - untested)
@@ -66,7 +66,7 @@ systemctl status bluetooth
 bluetoothd -v
 ```
 
-**On some Dell computers Bluetooth needs to be unblocked using**
+**On some computers Bluetooth needs to be unblocked using**
 
 ```
 sudo rfkill unblock bluetooth

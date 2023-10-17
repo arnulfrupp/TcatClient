@@ -15,7 +15,7 @@
         <Button Grid.Row="3" Grid.Column="1" x:Name="btnThreadOn" Text="Thread On" Clicked="btnThreadOn_Clicked"  />
         <Button Grid.Row="3" Grid.Column="2" x:Name="btnThreadOff" Text="Thread Off" Clicked="btnThreadOff_Clicked" />
         <Button Grid.Row="4" Grid.Column="0" x:Name="btnNetworkkey" Text="Networkkey" Clicked="btnNetworkkey_Clicked"  />
-        <Button Grid.Row="4" Grid.Column="1" x:Name="btnMore1" Text="??" />
+        <Button Grid.Row="4" Grid.Column="1" x:Name="btnDecommission" Text="Decommission" Clicked="btnDecommission_Clicked" />
         <Button Grid.Row="4" Grid.Column="2" x:Name="btnMore2" Text="??" />
     </Grid>
     

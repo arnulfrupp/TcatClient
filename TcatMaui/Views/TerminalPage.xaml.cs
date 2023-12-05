@@ -21,6 +21,8 @@ public partial class TerminalPage : ContentPage
     static X509Certificate2 theCaCert = null;
     static X509Certificate2 theInstallerCert = null;
 
+    static bool bDaliOnOff = false;
+
 
     public BluetoothDevice SelectedDevice
     {
@@ -258,7 +260,12 @@ public partial class TerminalPage : ContentPage
         {
             if (e.Tlv.Type == TcatTlvType.SendApplicationData)
             {
-                edtTerminal.Text += "Application data: " + Encoding.Default.GetString(e.Tlv.Data) + "\r\n";
+                string s = Encoding.Default.GetString(e.Tlv.Data);
+                
+                //if (!s.StartsWith("RECV:"))
+                {
+                    edtTerminal.Text += s;
+                }
             }
             else if (e.Tlv.Type == TcatTlvType.ResponseWithPayload)
             {
@@ -296,6 +303,8 @@ public partial class TerminalPage : ContentPage
         if (sslStream == null) return;
         if (!sslStream.IsAuthenticated) return;
 
+        edtTerminal.Text = "";
+
         sslStream.Write(tlvBytes, 0, tlvBytes.Length);
     }
 
@@ -324,7 +333,7 @@ public partial class TerminalPage : ContentPage
     private void btnNetworkkey_Clicked(object sender, EventArgs e)
     {
         byte[] networkkey = new byte[16] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
-        TcatTlv tlv = new(25, 0xF997, networkkey);
+        TcatTlv tlv = new(11, 0xabcd, networkkey);
         byte[] tlvBytes = tlv.GetBytes();
 
         if (sslStream == null) return;
@@ -343,6 +352,8 @@ public partial class TerminalPage : ContentPage
         if (!sslStream.IsAuthenticated) return;
 
         sslStream.Write(tlvBytes, 0, tlvBytes.Length);
+
+        edtTerminal.Text += "Decommission\n";
     }
 
     private void btnThreadOn_Clicked(object sender, EventArgs e)
@@ -367,6 +378,28 @@ public partial class TerminalPage : ContentPage
         sslStream.Write(tlvBytes, 0, tlvBytes.Length);
     }
 
+    private void btnDaliToggle_Clicked(object sender, EventArgs e)
+    {
+        string cmd = "dali fec0";
+
+        if(bDaliOnOff)
+        {
+            cmd = "dali ff00";
+        }
+
+        bDaliOnOff = !bDaliOnOff;
+
+        TcatTlv tlv = new(TcatTlv.TcatTlvType.SendApplicationData, Encoding.ASCII.GetBytes(cmd));
+        byte[] tlvBytes = tlv.GetBytes();
+
+        if (sslStream == null) return;
+        if (!sslStream.IsAuthenticated) return;
+
+        //edtTerminal.Text = "";
+
+        sslStream.Write(tlvBytes, 0, tlvBytes.Length);
+    }
+
     private void entInput_Focused(object sender, FocusEventArgs e)
     {
         if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
@@ -381,10 +414,5 @@ public partial class TerminalPage : ContentPage
         {
             grdLayout.TranslateTo(0, 0);
         }
-    }
-
-    private void btnDeCommission_Clicked(object sender, EventArgs e)
-    {
-
     }
 }

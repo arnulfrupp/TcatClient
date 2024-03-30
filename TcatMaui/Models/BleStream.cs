@@ -192,8 +192,8 @@ namespace TcatMaui.Models
             GattService primaryService;
             IReadOnlyList<GattCharacteristic> allChar;
             BluetoothUuid serviceUuid = BluetoothUuid.FromShortId(0xFFFB);
-            Guid rxCharGuid = Guid.Parse("7fddf61f-280a-4773-b448-ba1b8fe0dd69");   // "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-            Guid txCharGuid = Guid.Parse("6bd10d8b-85a7-4e5a-ba2d-c83558a5f220");   // "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+            Guid txCharGuid = Guid.Parse("7fddf61f-280a-4773-b448-ba1b8fe0dd69");   // "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+            Guid rxCharGuid = Guid.Parse("6bd10d8b-85a7-4e5a-ba2d-c83558a5f220");   // "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
             if (bleDevice == null) return false;
             bleDevice.GattServerDisconnected += OnGattServerDisconnected;

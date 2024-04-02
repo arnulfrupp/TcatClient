@@ -11,7 +11,7 @@
             VerticalOptions="Center">
 
             <Label 
-                Text="Version 0.1.5.0" 
+                Text="Version 0.1.7.0" 
                 HorizontalOptions="Center" />
 
             <Button

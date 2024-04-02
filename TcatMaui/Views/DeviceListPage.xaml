@@ -20,9 +20,9 @@
                             <RoundRectangle CornerRadius="5,5,5,5"/>
                         </Border.StrokeShape>
                         <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, 1*">
-                            <Label Grid.ColumnSpan="2" Grid.Row="0" Text="{Binding Name}" FontAttributes="Bold"/>
-                            <Label Grid.Column="0" Grid.Row="1" Text="Rssi: "/>
-                            <Label Grid.Column="1" Grid.Row="1" Text="{Binding Rssi}"/>
+                            <Label TextColor="Black" Grid.ColumnSpan="2" Grid.Row="0" Text="{Binding Name}" FontAttributes="Bold"/>
+                            <Label TextColor="Black" Grid.Column="0" Grid.Row="1" Text="Rssi: "/>
+                            <Label TextColor="Black" Grid.Column="1" Grid.Row="1" Text="{Binding Rssi}"/>
                         </Grid>
                     </Border>
                 </DataTemplate>

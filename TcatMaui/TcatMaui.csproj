@@ -43,6 +43,10 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)'=='net7.0-ios'">
+	  <!-- comment in only one of the following CodesignKeys -->
+	  <!-- it relates to the iOS device to which you you want to deploy the app for testing -->
+	  <!-- note that this device has to be registered at the Apple Developer Program Portal -->
+	  <!-- <CodesignKey>Apple Development: Created via API (82KF4T2F4R)</CodesignKey> -->  
 	  <CodesignKey>Apple Development: Armin Esch (729VC25C9X)</CodesignKey>
 	  <CodesignProvision>VS: WildCard Development</CodesignProvision>
 	</PropertyGroup>

@@ -22,23 +22,23 @@ namespace TcatMaui.Models
         public BuildInCertificate()
         {
             theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
-            theInstallerCertPem += "MIIB8zCCAZigAwIBAgIBATAKBggqhkjOPQQDAjB2MQswCQYDVQQGEwJERTELMAkG\n";
+            theInstallerCertPem += "MIIB5DCCAYqgAwIBAgIBATAKBggqhkjOPQQDAjB2MQswCQYDVQQGEwJERTELMAkG\n";
             theInstallerCertPem += "A1UECBMCQlkxETAPBgNVBAcTCEdhcmNoaW5nMQswCQYDVQQLEwJEUzEVMBMGA1UE\n";
             theInstallerCertPem += "ChMMSW52ZW50cm9uaWNzMSMwIQYDVQQDExp3d3cuaW52ZW50cm9uaWNzZ2xvYmFs\n";
-            theInstallerCertPem += "LmNvbTAgFw0yNDA4MTQwOTM2NDJaGA8yMTA3MTExNDA5MzY0MlowdTELMAkGA1UE\n";
+            theInstallerCertPem += "LmNvbTAgFw0yNDA4MTQwOTM0MThaGA8yMTA3MTExNDA5MzQxOFowZzELMAkGA1UE\n";
             theInstallerCertPem += "BhMCREUxCzAJBgNVBAgTAkJZMREwDwYDVQQHEwhHYXJjaGluZzELMAkGA1UECxMC\n";
-            theInstallerCertPem += "RFMxFTATBgNVBAoTDEludmVudHJvbmljczEiMCAGA1UEAxMZREFMSXAgQXBwIFRl\n";
-            theInstallerCertPem += "c3Rpbmcgd2l0aCBRUjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABMC5BcZ9sT2D\n";
-            theInstallerCertPem += "cKtB+yMs8sUs14x3c3k+ps2afLVKsKbRxwD1r2JqxVzvIF8ckmZvcc2jq9BRSQBY\n";
-            theInstallerCertPem += "9/gxyr1y88GjFjAUMBIGCSsGAQQBgt8qAwQFAQMhAwMwCgYIKoZIzj0EAwIDSQAw\n";
-            theInstallerCertPem += "RgIhAOS+IVyD3tCQbHSqa1I2NhBHk9w+5+eryo5vpq78xKmMAiEAp2tgdMm564Mk\n";
-            theInstallerCertPem += "bjnxi2z22W7xwJ/5citGr6rKUw47QUo=\n";
+            theInstallerCertPem += "RFMxFTATBgNVBAoTDEludmVudHJvbmljczEUMBIGA1UEAxMLREFMSXAgQWRtaW4w\n";
+            theInstallerCertPem += "WTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAS0V4ZNEenCQxu5QwB/ME5nSl/K8Ack\n";
+            theInstallerCertPem += "Ph0MOcyjzL5o0ssHIJbjoN1/fcX4SLcMSOI78tL0maypFVMAe4Yw41ceoxYwFDAS\n";
+            theInstallerCertPem += "BgkrBgEEAYLfKgMEBQEBIQEBMAoGCCqGSM49BAMCA0gAMEUCIQD4m1YzZi8VFssv\n";
+            theInstallerCertPem += "USjBwH1wEbnEeof82Du63LD4UwkZZgIgVtxQ4O9EU7AtMWxJoy5xbe/7KDoQdsit\n";
+            theInstallerCertPem += "44ARewW1y0M=\n";
             theInstallerCertPem += "-----END CERTIFICATE-----\n";
 
             theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
-            theInstallerCertPrivKeyPem += "MHcCAQEEIMDDNuHkWEuhdi9f+g/gjF2ErSS3E25Etwty0doU1zyaoAoGCCqGSM49\n";
-            theInstallerCertPrivKeyPem += "AwEHoUQDQgAEwLkFxn2xPYNwq0H7IyzyxSzXjHdzeT6mzZp8tUqwptHHAPWvYmrF\n";
-            theInstallerCertPrivKeyPem += "XO8gXxySZm9xzaOr0FFJAFj3+DHKvXLzwQ==\n";
+            theInstallerCertPrivKeyPem += "MHcCAQEEIDCUZ28X4/Gide9cGukZuMW8z7v7TgzjSiTILqtq9CLToAoGCCqGSM49\n";
+            theInstallerCertPrivKeyPem += "AwEHoUQDQgAEtFeGTRHpwkMbuUMAfzBOZ0pfyvAHJD4dDDnMo8y+aNLLByCW46Dd\n";
+            theInstallerCertPrivKeyPem += "f33F+Ei3DEjiO/LS9JmsqRVTAHuGMONXHg==\n";
             theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
 
             theCaCertPem += "-----BEGIN CERTIFICATE-----\n";

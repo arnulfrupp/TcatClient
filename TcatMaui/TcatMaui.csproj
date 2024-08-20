@@ -31,14 +31,16 @@
 
 		<!-- Windows 10 issue: https://github.com/dotnet/maui/issues/12080 -->
 		<WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
-		<GenerateAppInstallerFile>True</GenerateAppInstallerFile>
-		<AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+		<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
 		<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-		<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+		<AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
 		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
 		<GenerateTestArtifacts>True</GenerateTestArtifacts>
 		<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
 		<AppInstallerUri>https://1drv.ms/f/s!Avz-rEdfSTvBjZAwopWrsEr4SPNwHA%3fe=DFo46n</AppInstallerUri>
+		<PackageCertificateThumbprint>476E21D975747C3CE39BDB77A6B250275D156E71</PackageCertificateThumbprint>
+		<DefaultLanguage>en</DefaultLanguage>
 		
 	</PropertyGroup>
 
@@ -49,6 +51,10 @@
 	  <!-- <CodesignKey>Apple Development: Created via API (82KF4T2F4R)</CodesignKey> -->  
 	  <CodesignKey>Apple Development: Armin Esch (729VC25C9X)</CodesignKey>
 	  <CodesignProvision>VS: WildCard Development</CodesignProvision>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-android|AnyCPU'">
+	  <AndroidPackageFormat>apk</AndroidPackageFormat>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -70,7 +76,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Platforms\Android\Resources\raw\ca.der" />
 	  <None Remove="Platforms\Android\Resources\raw\caCopy.pem" />
 	  <None Remove="Resources\AppIcon\appicon.svg" />
 	</ItemGroup>

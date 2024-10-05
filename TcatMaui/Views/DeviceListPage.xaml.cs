@@ -63,7 +63,7 @@ public partial class DeviceListPage : ContentPage
 
         if (e.Device == null) return;    // List only Bluetooth devices
         if (e.Rssi < minRssi) return;
-        if (String.IsNullOrEmpty(e.Name)) return;
+        //if (String.IsNullOrEmpty(e.Name)) return;
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
@@ -82,7 +82,7 @@ public partial class DeviceListPage : ContentPage
             }
             else if(iPositionBelowStrogerRssi < maxItemsInList)
             {
-                string device_name = String.IsNullOrEmpty(e.Name) ? "<no name>" : e.Name;
+                string device_name = String.IsNullOrEmpty(e.Name) ? "<no name: " + e.Device.Id.ToString() + ">": e.Name + " (" + e.Device.Id.ToString() + ")";
                 var theNewDev = new BleThreadDevice_Portable() { Name = device_name, OperatingSystemBleDevice = e.Device, Rssi = e.Rssi };
 
                 if(VisibleDevices.Count >= maxItemsInList)

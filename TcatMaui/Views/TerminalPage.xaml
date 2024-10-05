@@ -16,7 +16,8 @@
         <Button Grid.Row="3" Grid.Column="2" x:Name="btnThreadOff" Text="Thread Off" Clicked="btnThreadOff_Clicked" />
         <Button Grid.Row="4" Grid.Column="0" x:Name="btnNetworkkey" Text="Networkkey" Clicked="btnNetworkkey_Clicked"  />
         <Button Grid.Row="4" Grid.Column="1" x:Name="btnDecommission" Text="Decommission" Clicked="btnDecommission_Clicked" />
-        <Button Grid.Row="4" Grid.Column="2" x:Name="btnDaliToggle" Text="Toggle Lights" Clicked="btnDaliToggle_Clicked" />
+        <!-- <Button Grid.Row="4" Grid.Column="2" x:Name="btnDaliToggle" Text="Toggle Lights" Clicked="btnDaliToggle_Clicked" /> -->
+        <Button Grid.Row="4" Grid.Column="2" x:Name="btnDiagnosticGet" Text="Get Diagnostic TLVs" Clicked="btnDiagnosticGet_Clicked" />
     </Grid>
     
 </ContentPage>

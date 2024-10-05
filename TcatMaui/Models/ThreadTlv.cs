@@ -24,6 +24,7 @@ namespace TcatMaui.Models
             Ping                            = 10,   // TCAT ping request TLV
             GetDeviceId                     = 11,   // TCAT device ID query TLV
             GetExtendedPanID                = 12,   // TCAT extended PAN ID query TLV
+            GetProvissioningUrl             = 13,   // TCAT provisioning URL query TLV
             PresentPskdHash                 = 16,   // TCAT commissioner rights elevation request TLV using PSKd hash
             PresentPskcHash                 = 17,   // TCAT commissioner rights elevation request TLV using PSKc hash
             PresentInstallCodeHash          = 18,   // TCAT commissioner rights elevation request TLV using install code
@@ -33,7 +34,6 @@ namespace TcatMaui.Models
             // Command Class Commissioning
             SetActiveOperationalDataset     = 32,   // TCAT active operational dataset TLV
             SetActiveOperationalDataset1    = 33,   // TCAT active operational dataset alterative #1 TLV
-            GetProvissioningTlvs            = 36,   // TCAT provisioning TLVs query TLV
             GetCommissionerCertificate      = 37,   // TCAT commissioner certificate query TLV
             GetDiagnosticTlvs               = 38,   // TCAT diagnostics TLVs query TLV
             StartThreadInterface            = 39,   // TCAT start thread interface request TLV
@@ -74,10 +74,14 @@ namespace TcatMaui.Models
             TcatBusy            = 5,            // Command cannot be executed because the resource is busy
             TcatUndefined       = 6,            // The requested value, data or service is not defined (currently) or not present
             TcatHashError       = 7,            // The hash value presented by the commissioner was incorrect
-            TcatUnauthorized    = 8,            // Sender does not have sufficient authorization for the given command
+            TcatUnauthorized    = 16,           // Sender does not have sufficient authorization for the given command
         };
 
 
+        /**
+         * MeshCoP TLV Types.
+         *
+         */
 
         public enum MeshCopTlvType
         {
@@ -136,6 +140,12 @@ namespace TcatMaui.Models
             DiscoverResponse        = 129
         };
 
+
+        /**
+         * MeshCoP TLV Length Information.
+         *
+         */
+
         // MeshCoP TLV lenght n = kMeshCopTlvTlvLen[type]
         // n = 999  : TLV type invalid
         // n > 0    : TLV data length = n
@@ -154,6 +164,46 @@ namespace TcatMaui.Models
                                                   999,999,999,999,999,999,999,999,999,999,
                                                   999,999,999,999,999,999,999,999,999,999,
                                                   999,999,999,999,999,999,999,999,  2, 2  };
+
+
+        /**
+         * Network Diagnostiv TLV Types.
+         *
+         */
+
+        public enum DiagnosticTlvType
+        {
+            MacExtendedAddress   = 0,
+            MacAddress           = 1,
+            Mode                 = 2,
+            Timeout              = 3,
+            Connectivity         = 4,
+            Route64              = 5,
+            LeaderData           = 6,
+            NetworkData          = 7,
+            IPv6AddressList      = 8,
+            MacCounters          = 9,
+            BatteryLevel         = 14,
+            SupplyVoltage        = 15,
+            ChildTable           = 16,
+            ChannelPages         = 17,
+            TypeList             = 18,
+            MaxChildTimeout      = 19,
+            Eui64                = 23,
+            Version              = 24,
+            VendorName           = 25,
+            VendorModel          = 26,
+            VendorSwVersion      = 27,
+            ThreadStackVersion   = 28,
+            Child                = 29,
+            ChildIPv6AddressList = 30,
+            RouterNeighbor       = 31,
+            Answer               = 32,
+            QueryId              = 33,
+            MleCounter           = 34,
+            VendorAppUrl         = 35,
+            ChannelDenylistMask  = 36
+        };
 
         TcatTlvType type;
         byte[] data;
@@ -210,7 +260,7 @@ namespace TcatMaui.Models
 
 
         /**
-         * Create TCAT TLV with a MeshCoP having arbitrary data payload
+         * Create TCAT TLV with a MeshCoP (e.g. a dataset) having arbitrary data payload
          *
          */
 
@@ -242,7 +292,7 @@ namespace TcatMaui.Models
 
 
         /**
-         * Create TCAT TLV with a MeshCoP TLV having a fixed data lenght
+         * Create TCAT TLV with a MeshCoP TLV (e.g. a dataset) having a fixed data lenght. The data content may be set later.
          *
          */
 
@@ -262,7 +312,7 @@ namespace TcatMaui.Models
 
 
         /**
-         * Create TCAT TLV with MeshCoP TLVs setting the channel, PANID and Network Key.
+         * Create TCAT Set Active Operational Dataset TLV with MeshCoP TLVs forming a dataset including channel, PANID and network key.
          *
          */
 
@@ -293,8 +343,37 @@ namespace TcatMaui.Models
 
 
         /**
+          * Create TCAT Get Diagnostic TLVs with one requested diagnostic TLV type
+          */
+
+        public TcatTlv(DiagnosticTlvType aDiagnosticTlvType)
+        {
+            type = TcatTlvType.GetDiagnosticTlvs;
+            data = new byte[1];
+            data[0] = (byte)aDiagnosticTlvType;
+        }
+
+
+        /**
+          * Create TCAT Get Diagnostic TLVs wit a list of requested diagnostic TLV types
+          */
+
+        public TcatTlv(DiagnosticTlvType[] aDiagnosticTlvTypes)
+        {
+            type = TcatTlvType.GetDiagnosticTlvs;
+            data = new byte[aDiagnosticTlvTypes.Length];
+
+            for (int i = 0; i < aDiagnosticTlvTypes.Length; i++)
+            {
+                data[i] = (byte)aDiagnosticTlvTypes[i];
+            }
+        }
+
+
+        /**
          * Merge two TCAT TLVs of the same type into one with combined payload
-         * This methord is typically used to join two TCAT TLVs containing MeshCoP TLVs as payload
+         * This method can be used to join two TCAT TLVs containing MeshCoP TLVs (e.g. a dataset) or Get Diagnostic TLVs as payload
+         * The tpe of both TCAT TLVs must be identical
          *
          */
 
@@ -310,38 +389,78 @@ namespace TcatMaui.Models
 
 
         /**
-         * Find a specific MeshCoP TLV inside a TCAT TLV payload and extract the value
+         * Find a specific TLV inside a TCAT TLV payload and extract the value. 
+         * Returns the payload of the first occurance of the TLV type in the payload or null if not found.
          *
          */
 
-        public byte?[] FindTlv(MeshCopTlvType aMeshCopTlvType)
+        public byte?[] FindTlv(byte aTlvType)
         {
             int index = 0;
 
-            if(type != TcatTlvType.SetActiveOperationalDataset) throw new InvalidDataException("Encoded TCAT type does not contain MeshCoP TLVs");
-
-            while(index + 1 < data.Length)
+            while (index + 1 < data.Length)
             {
-                if (data[index] == (byte)aMeshCopTlvType)
+                byte tlvType = data[index];
+                int len = data[index + 1];
+
+                if (len == 255)
                 {
-                    int len = data[index + 1];
+                    if (index + 3 < data.Length)
+                    {
+                        len = ((int)data[2]) << 8 + data[3];
+                        index += 2;
+                    }
+                    else throw new InvalidDataException("Malformed TLV");
+                }
+
+                index += 2;
+
+                if (tlvType == (byte)aTlvType)
+                {
                     byte?[] result = new byte?[len];
 
-                    index += 2;
+                    if (data.Length < index + len) throw new InvalidDataException("Malformed TLV");
 
-                    if (len == 255) throw new InvalidDataException("Malformed MeshCoP TLV (loo long)");
-                    if (data.Length  < index + len) throw new InvalidDataException("Malformed MeshCoP TLV");
-
-                    for(int i = 0; i < len; i++) 
+                    for (int i = 0; i < len; i++)
                     {
                         result[i] = data[index + i];
                     }
 
                     return result;
                 }
+                else index += len;
             }
 
             return null;
+        }
+
+
+        /**
+         * Find a specific MeshCoP TLV inside a TCAT TLV payload and extract the value
+         *
+         */
+
+        public byte?[] FindTlv(MeshCopTlvType aMeshCopTlvType)
+        {
+            if (type != TcatTlvType.ResponseWithPayload &&
+                type != TcatTlvType.SetActiveOperationalDataset &&
+                type != TcatTlvType.SetActiveOperationalDataset1) throw new InvalidDataException("Encoded TCAT type does not contain MeshCoP TLVs");
+
+            return FindTlv((byte)aMeshCopTlvType);
+        }
+
+
+        /**
+          * Find a specific diagnostic TLV inside a TCAT TLV payload and extract the value
+          *
+          */
+
+        public byte?[] FindTlv(DiagnosticTlvType aDiagnosticTlvType)
+        {
+            if (type != TcatTlvType.ResponseWithPayload &&
+                type != TcatTlvType.GetDiagnosticTlvs) throw new InvalidDataException("Encoded TCAT type does not contain diagnostic TLVs");
+
+            return FindTlv((byte)aDiagnosticTlvType);
         }
 
 

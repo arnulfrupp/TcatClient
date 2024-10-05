@@ -7,6 +7,7 @@ using InTheHand.Bluetooth;
 using TcatMaui.Models;
 using static TcatMaui.Models.TcatTlv;
 using System.Data;
+using Microsoft.Extensions.Primitives;
 
 namespace TcatMaui.Views;
 
@@ -17,6 +18,8 @@ public partial class TerminalPage : ContentPage
     SslStream sslStream = null;
     TlvStreamWatcher tlvStreamWatcher = null;
     BluetoothDevice selectedDevice;
+    TcatTlvType lastTcatTlvType = TcatTlvType.Undefined;
+
 
     static X509Certificate2 theCaCert = null;
     static X509Certificate2 theInstallerCert = null;
@@ -128,7 +131,7 @@ public partial class TerminalPage : ContentPage
         string theCaCertPem = "";
 
         // Inventronics Thread Commissioner Certificate
-
+        /*
         theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
         theInstallerCertPem += "MIIB5DCCAYqgAwIBAgIBATAKBggqhkjOPQQDAjB2MQswCQYDVQQGEwJERTELMAkG\n";
         theInstallerCertPem += "A1UECBMCQlkxETAPBgNVBAcTCEdhcmNoaW5nMQswCQYDVQQLEwJEUzEVMBMGA1UE\n";
@@ -163,9 +166,9 @@ public partial class TerminalPage : ContentPage
         theCaCertPem += "ChnIQsSTYNILRSNryGbbdjTEMJ7cbVYCIE5cTWhwq0zcrHGRNgeGW39NQFFStIrF\n";
         theCaCertPem += "AxzyYGM/Omw+\n";
         theCaCertPem += "-----END CERTIFICATE-----\n";
-       
+        */
 
-        // OpenThread Referenz
+        // OpenThread Referenz  NCS v2.6.0
         /*
         theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
         theInstallerCertPem += "MIIB7DCCAZGgAwIBAgIEAQIDBDAKBggqhkjOPQQDAjBvMQswCQYDVQQGEwJYWDEQ\n";
@@ -201,6 +204,44 @@ public partial class TerminalPage : ContentPage
         theCaCertPem += "kuerX1encIH2AiEA5rq490NUobM1Au43roxJq1T6Z43LscPVbGZfULD1Jq0=\n";
         theCaCertPem += "-----END CERTIFICATE-----\n";
         */
+
+        // OpenThread Referenz  NCS v2.7.0 + OT main Sept 28, 2024
+        // /*
+        theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
+        theInstallerCertPem += "MIIB1TCCAXugAwIBAgIDDhqDMAoGCCqGSM49BAMCMHExJjAkBgNVBAMMHVRocmVh\n";
+        theInstallerCertPem += "ZCBDZXJ0aWZpY2F0aW9uIERldmljZUNBMRkwFwYDVQQKDBBUaHJlYWQgR3JvdXAg\n";
+        theInstallerCertPem += "SW5jMRIwEAYDVQQHDAlTYW4gUmFtb24xCzAJBgNVBAgMAkNBMQswCQYDVQQGEwJV\n";
+        theInstallerCertPem += "UzAeFw0yNDA1MDcwOTM5NDVaFw0yNDA1MjEwOTM5NDVaMDoxHzAdBgNVBAMMFlRD\n";
+        theInstallerCertPem += "QVQgRXhhbXBsZSBDb21tQ2VydDExFzAVBgNVBAUTDjM1MjMtMTU0My0wMDAxMFkw\n";
+        theInstallerCertPem += "EwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHZq8vhZ816JEhgqe6zZKioMDFbrKEkJl\n";
+        theInstallerCertPem += "nRfSJEdfXZYSS94wUFKHzEHcAY3PU4IPTGnF5pusUE41rJa2n8vC76M5MDcwHwYD\n";
+        theInstallerCertPem += "VR0jBBgwFoAUX6sbKWiIodS0MaiGYefnZlnt+BkwFAYJKwYBBAGC3yoDBAcEBSEB\n";
+        theInstallerCertPem += "AQEBMAoGCCqGSM49BAMCA0gAMEUCIHeEfOOEX3jya2+bJMoGEEcFE56eUOjaz9aV\n";
+        theInstallerCertPem += "Tt1soEG8AiEA0taHGNpGgjE/b4kLW27dd8H+D/H5kNbq9Jlm9ct078Y=\n";
+        theInstallerCertPem += "-----END CERTIFICATE-----\n";
+
+        theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
+        theInstallerCertPrivKeyPem += "MHcCAQEEIPUEbXoKX2i4zyuvq7IRTVIlMpzf3t3pmlLc4uQprrq6oAoGCCqGSM49\n";
+        theInstallerCertPrivKeyPem += "AwEHoUQDQgAEHZq8vhZ816JEhgqe6zZKioMDFbrKEkJlnRfSJEdfXZYSS94wUFKH\n";
+        theInstallerCertPrivKeyPem += "zEHcAY3PU4IPTGnF5pusUE41rJa2n8vC7w==\n";
+        theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
+
+        theCaCertPem += "-----BEGIN CERTIFICATE-----\n";
+        theCaCertPem += "MIICOzCCAeGgAwIBAgIJAKOc2hehOGoBMAoGCCqGSM49BAMCMHExJjAkBgNVBAMM\n";
+        theCaCertPem += "HVRocmVhZCBDZXJ0aWZpY2F0aW9uIERldmljZUNBMRkwFwYDVQQKDBBUaHJlYWQg\n";
+        theCaCertPem += "R3JvdXAgSW5jMRIwEAYDVQQHDAlTYW4gUmFtb24xCzAJBgNVBAgMAkNBMQswCQYD\n";
+        theCaCertPem += "VQQGEwJVUzAeFw0yNDA1MDMyMDAyMThaFw00NDA0MjgyMDAyMThaMHExJjAkBgNV\n";
+        theCaCertPem += "BAMMHVRocmVhZCBDZXJ0aWZpY2F0aW9uIERldmljZUNBMRkwFwYDVQQKDBBUaHJl\n";
+        theCaCertPem += "YWQgR3JvdXAgSW5jMRIwEAYDVQQHDAlTYW4gUmFtb24xCzAJBgNVBAgMAkNBMQsw\n";
+        theCaCertPem += "CQYDVQQGEwJVUzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGy850VBIPTkN3oL\n";
+        theCaCertPem += "x++zIUsZk2k26w4fuieFz9oNvjdb5W14+Yf3mvGWsl4NHyLxqhmamVAR4h7zWRlZ\n";
+        theCaCertPem += "0XyMVpKjYjBgMB4GA1UdEQQXMBWBE3RvbUB0aHJlYWRncm91cC5vcmcwDgYDVR0P\n";
+        theCaCertPem += "AQH/BAQDAgGGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFF+rGyloiKHUtDGo\n";
+        theCaCertPem += "hmHn52ZZ7fgZMAoGCCqGSM49BAMCA0gAMEUCIQCTq1qjPZs9fAJB6ppTXs588Pnu\n";
+        theCaCertPem += "eVFOwC8bd//D99KiHAIgU84kwFHIyDvFqu6y+u1hFqBGsiuTmKwZ2PHhVe/xK1k=\n";
+        theCaCertPem += "-----END CERTIFICATE-----\n";
+        // */
+
 
         if (theInstallerCert == null || theCaCert == null)
         {
@@ -256,6 +297,24 @@ public partial class TerminalPage : ContentPage
         sslStream = null;
     }
 
+    void PrintBytes(string aTextBegin, byte?[] aBytes, string aTextEnd = "\n")
+    {
+        StringBuilder sb = new();
+
+        if (aBytes == null) return;
+
+        sb.Append(aTextBegin);
+
+        foreach (byte b in aBytes)
+        {
+            sb.Append(b.ToString("X2"));
+        }
+
+        sb.Append(aTextEnd);
+
+        edtTerminal.Text += sb.ToString();
+    }
+
     void OnTlvReceived(object sender, TlvStreamWatcher.TlvAvailableEventArgs e)
     {
         MainThread.BeginInvokeOnMainThread(async () =>
@@ -271,11 +330,30 @@ public partial class TerminalPage : ContentPage
             }
             else if (e.Tlv.Type == TcatTlvType.ResponseWithPayload)
             {
-                edtTerminal.Text += "Response payload: " + Encoding.Default.GetString(e.Tlv.Data) + "\r\n";
+                if(lastTcatTlvType == TcatTlvType.GetDiagnosticTlvs)
+                {
+                    byte?[] bytes;
+                    edtTerminal.Text += "Diagnostic response payload len: " + e.Tlv.Data.Length.ToString() + "\n";
+
+                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.Eui64);
+                    PrintBytes("EUI64:", bytes);
+                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.Mode);
+                    PrintBytes("Mode:", bytes);
+                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.MacAddress);
+                    PrintBytes("MacAddress:", bytes);
+                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.NetworkData);
+                    PrintBytes("NetworkData:", bytes);
+                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.IPv6AddressList);
+                    PrintBytes("IPv6AddressList:", bytes);
+
+                    lastTcatTlvType = TcatTlvType.Undefined;
+                }
+                else edtTerminal.Text += "Response payload: " + Encoding.Default.GetString(e.Tlv.Data) + "\n";
             }
             else if (e.Tlv.Type == TcatTlvType.ResponseWithStatus)
             {
-                edtTerminal.Text += "Response code: " + e.Tlv.Data[0].ToString() + "\r\n";
+                edtTerminal.Text += "Response code: " + e.Tlv.Data[0].ToString() + " ("+ Enum.GetName(typeof(TcatStatus), (TcatStatus)e.Tlv.Data[0]) + ") \n";
+                lastTcatTlvType = TcatTlvType.Undefined;
             }
             else
             {
@@ -401,6 +479,22 @@ public partial class TerminalPage : ContentPage
 
         sslStream.Write(tlvBytes, 0, tlvBytes.Length);
     }
+
+    private void btnDiagnosticGet_Clicked(object sender, EventArgs e)
+    {
+        DiagnosticTlvType[] diags = { DiagnosticTlvType.Eui64, DiagnosticTlvType.Mode, DiagnosticTlvType.MacAddress, DiagnosticTlvType.NetworkData, DiagnosticTlvType.IPv6AddressList };
+        TcatTlv tlv = new(diags);
+        byte[] tlvBytes = tlv.GetBytes();
+
+        if (sslStream == null) return;
+        if (!sslStream.IsAuthenticated) return;
+
+        edtTerminal.Text += "Requested Eui64, Mode, MacAddress, NetworkData and IPv6AddressList\n";
+        lastTcatTlvType = TcatTlvType.GetDiagnosticTlvs;
+
+        sslStream.Write(tlvBytes, 0, tlvBytes.Length);
+    }
+
 
     private void entInput_Focused(object sender, FocusEventArgs e)
     {

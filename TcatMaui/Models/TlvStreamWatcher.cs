@@ -72,8 +72,9 @@ namespace TcatMaui.Models
                 stream.BeginRead(tlvHeaderBuffer, writeIndex, 2 - writeIndex, new AsyncCallback(ReadExtHeaderCallback), null);
             }
             else
-            {
-                nextTlv.Data = new byte[tlvHeaderBuffer[0] >> 8 + tlvHeaderBuffer[1]];
+            { 
+                uint len = ((uint)tlvHeaderBuffer[0]) * 256 + tlvHeaderBuffer[1];
+                nextTlv.Data = new byte[len];
                 writeIndex = 0;
 
                 if (nextTlv.Data.Length > 0)

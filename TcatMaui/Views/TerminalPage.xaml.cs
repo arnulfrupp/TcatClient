@@ -6,8 +6,6 @@ using System.Text;
 using InTheHand.Bluetooth;
 using TcatMaui.Models;
 using static TcatMaui.Models.TcatTlv;
-using System.Data;
-using Microsoft.Extensions.Primitives;
 
 namespace TcatMaui.Views;
 
@@ -21,10 +19,10 @@ public partial class TerminalPage : ContentPage
     TcatTlvType lastTcatTlvType = TcatTlvType.Undefined;
 
 
-    static X509Certificate2 theCaCert = null;
-    static X509Certificate2 theInstallerCert = null;
+    X509Certificate2 theCaCert = null;
+    X509Certificate2 theInstallerCert = null;
 
-    static bool bDaliOnOff = false;
+    bool bDaliOnOff = false;
 
 
     public BluetoothDevice SelectedDevice
@@ -130,121 +128,129 @@ public partial class TerminalPage : ContentPage
         string theInstallerCertPrivKeyPem = "";
         string theCaCertPem = "";
 
-        // Inventronics Thread Commissioner Certificate
-        /*
-        theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
-        theInstallerCertPem += "MIIB5DCCAYqgAwIBAgIBATAKBggqhkjOPQQDAjB2MQswCQYDVQQGEwJERTELMAkG\n";
-        theInstallerCertPem += "A1UECBMCQlkxETAPBgNVBAcTCEdhcmNoaW5nMQswCQYDVQQLEwJEUzEVMBMGA1UE\n";
-        theInstallerCertPem += "ChMMSW52ZW50cm9uaWNzMSMwIQYDVQQDExp3d3cuaW52ZW50cm9uaWNzZ2xvYmFs\n";
-        theInstallerCertPem += "LmNvbTAgFw0yNDA4MTQwOTM0MThaGA8yMTA3MTExNDA5MzQxOFowZzELMAkGA1UE\n";
-        theInstallerCertPem += "BhMCREUxCzAJBgNVBAgTAkJZMREwDwYDVQQHEwhHYXJjaGluZzELMAkGA1UECxMC\n";
-        theInstallerCertPem += "RFMxFTATBgNVBAoTDEludmVudHJvbmljczEUMBIGA1UEAxMLREFMSXAgQWRtaW4w\n";
-        theInstallerCertPem += "WTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAS0V4ZNEenCQxu5QwB/ME5nSl/K8Ack\n";
-        theInstallerCertPem += "Ph0MOcyjzL5o0ssHIJbjoN1/fcX4SLcMSOI78tL0maypFVMAe4Yw41ceoxYwFDAS\n";
-        theInstallerCertPem += "BgkrBgEEAYLfKgMEBQEBIQEBMAoGCCqGSM49BAMCA0gAMEUCIQD4m1YzZi8VFssv\n";
-        theInstallerCertPem += "USjBwH1wEbnEeof82Du63LD4UwkZZgIgVtxQ4O9EU7AtMWxJoy5xbe/7KDoQdsit\n";
-        theInstallerCertPem += "44ARewW1y0M=\n";
-        theInstallerCertPem += "-----END CERTIFICATE-----\n";
-
-        theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
-        theInstallerCertPrivKeyPem += "MHcCAQEEIDCUZ28X4/Gide9cGukZuMW8z7v7TgzjSiTILqtq9CLToAoGCCqGSM49\n";
-        theInstallerCertPrivKeyPem += "AwEHoUQDQgAEtFeGTRHpwkMbuUMAfzBOZ0pfyvAHJD4dDDnMo8y+aNLLByCW46Dd\n";
-        theInstallerCertPrivKeyPem += "f33F+Ei3DEjiO/LS9JmsqRVTAHuGMONXHg==\n";
-        theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
-
-        theCaCertPem += "-----BEGIN CERTIFICATE-----\n";
-        theCaCertPem += "MIICFTCCAbygAwIBAgIIJ/sUSX8TaTkwCgYIKoZIzj0EAwIwdjELMAkGA1UEBhMC\n";
-        theCaCertPem += "REUxCzAJBgNVBAgTAkJZMREwDwYDVQQHEwhHYXJjaGluZzELMAkGA1UECxMCRFMx\n";
-        theCaCertPem += "FTATBgNVBAoTDEludmVudHJvbmljczEjMCEGA1UEAxMad3d3LmludmVudHJvbmlj\n";
-        theCaCertPem += "c2dsb2JhbC5jb20wIBcNMjQwODE0MDkwNDIyWhgPMjEwNzEyMTQwOTA0MjJaMHYx\n";
-        theCaCertPem += "CzAJBgNVBAYTAkRFMQswCQYDVQQIEwJCWTERMA8GA1UEBxMIR2FyY2hpbmcxCzAJ\n";
-        theCaCertPem += "BgNVBAsTAkRTMRUwEwYDVQQKEwxJbnZlbnRyb25pY3MxIzAhBgNVBAMTGnd3dy5p\n";
-        theCaCertPem += "bnZlbnRyb25pY3NnbG9iYWwuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\n";
-        theCaCertPem += "mc1809Ehgb0gY2XrGfH6C2Y/HbBRXXaPa2ZfIIQfsPF85sXdvN/rPOUibLH9tice\n";
-        theCaCertPem += "UxInt/ML/849SuyfHeDctaMyMDAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQU\n";
-        theCaCertPem += "jdzsqNIB5ZFtAyFNPTnH0vPAwwUwCgYIKoZIzj0EAwIDRwAwRAIgIb1mYO4IUj5K\n";
-        theCaCertPem += "ChnIQsSTYNILRSNryGbbdjTEMJ7cbVYCIE5cTWhwq0zcrHGRNgeGW39NQFFStIrF\n";
-        theCaCertPem += "AxzyYGM/Omw+\n";
-        theCaCertPem += "-----END CERTIFICATE-----\n";
-        */
-
-        // OpenThread Referenz  NCS v2.6.0
-        /*
-        theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
-        theInstallerCertPem += "MIIB7DCCAZGgAwIBAgIEAQIDBDAKBggqhkjOPQQDAjBvMQswCQYDVQQGEwJYWDEQ\n";
-        theInstallerCertPem += "MA4GA1UECBMHTXlTdGF0ZTEPMA0GA1UEBxMGTXlDaXR5MQ8wDQYDVQQLEwZNeVVu\n";
-        theInstallerCertPem += "aXQxETAPBgNVBAoTCE15VmVuZG9yMRkwFwYDVQQDExB3d3cubXl2ZW5kb3IuY29t\n";
-        theInstallerCertPem += "MB4XDTIzMTAxNjEwMzgyN1oXDTI1MTAxNjEwMzgyN1owdDELMAkGA1UEBhMCWFgx\n";
-        theInstallerCertPem += "EDAOBgNVBAgTB015U3RhdGUxDzANBgNVBAcTBk15Q2l0eTEPMA0GA1UECxMGTXlV\n";
-        theInstallerCertPem += "bml0MREwDwYDVQQKEwhNeVZlbmRvcjEeMBwGA1UEAxMVR2l2ZW5OYW1lIEZhbWls\n";
-        theInstallerCertPem += "aXlOYW1lMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEUb+XQqxo00qRkhpEEVea\n";
-        theInstallerCertPem += "IK7SE9oPH2wg0o/oVSN2uQeFgAK25mTHABIcC6YoSX7j6YsvT0t05C8hbsEshz5C\n";
-        theInstallerCertPem += "U6MWMBQwEgYJKwYBBAGC3yoDBAUBAQEBATAKBggqhkjOPQQDAgNJADBGAiEA3IP7\n";
-        theInstallerCertPem += "K139L48a5hgK2xYlTlo4nGCeXnVjvyZBngFjrE4CIQCx8eo/XK85tGPxsPpD03m2\n";
-        theInstallerCertPem += "93MhOtdDcJhpNnzYcI+OwQ==\n";
-        theInstallerCertPem += "-----END CERTIFICATE-----\n";
-
-        theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
-        theInstallerCertPrivKeyPem += "MHcCAQEEIPHYBsvz+VYNrR/sjCRJml6rvkP/VQzNxK1IXhxzeVzJoAoGCCqGSM49\n";
-        theInstallerCertPrivKeyPem += "AwEHoUQDQgAEUb+XQqxo00qRkhpEEVeaIK7SE9oPH2wg0o/oVSN2uQeFgAK25mTH\n";
-        theInstallerCertPrivKeyPem += "ABIcC6YoSX7j6YsvT0t05C8hbsEshz5CUw==\n";
-        theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
-
-        theCaCertPem += "-----BEGIN CERTIFICATE-----\n";
-        theCaCertPem += "MIICCDCCAa2gAwIBAgIJAIKxygBXoH+5MAoGCCqGSM49BAMCMG8xCzAJBgNVBAYT\n";
-        theCaCertPem += "AlhYMRAwDgYDVQQIEwdNeVN0YXRlMQ8wDQYDVQQHEwZNeUNpdHkxDzANBgNVBAsT\n";
-        theCaCertPem += "Bk15VW5pdDERMA8GA1UEChMITXlWZW5kb3IxGTAXBgNVBAMTEHd3dy5teXZlbmRv\n";
-        theCaCertPem += "ci5jb20wHhcNMjMxMDE2MTAzMzE1WhcNMjYxMDE2MTAzMzE1WjBvMQswCQYDVQQG\n";
-        theCaCertPem += "EwJYWDEQMA4GA1UECBMHTXlTdGF0ZTEPMA0GA1UEBxMGTXlDaXR5MQ8wDQYDVQQL\n";
-        theCaCertPem += "EwZNeVVuaXQxETAPBgNVBAoTCE15VmVuZG9yMRkwFwYDVQQDExB3d3cubXl2ZW5k\n";
-        theCaCertPem += "b3IuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdyzPAXGKeZY94OhHAWX\n";
-        theCaCertPem += "HzJfQIjGSyaOzlgL9OEFw2SoUDncLKPGwfPAUSfuMyEkzszNDM0HHkBsDLqu4n25\n";
-        theCaCertPem += "/6MyMDAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQU4EynoSw9eDKZEVPkums2\n";
-        theCaCertPem += "IWLAJCowCgYIKoZIzj0EAwIDSQAwRgIhAMYGGL9xShyE6P9wEU+MAYF6W3CzdrwV\n";
-        theCaCertPem += "kuerX1encIH2AiEA5rq490NUobM1Au43roxJq1T6Z43LscPVbGZfULD1Jq0=\n";
-        theCaCertPem += "-----END CERTIFICATE-----\n";
-        */
-
-        // OpenThread Referenz  NCS v2.7.0 + OT main Sept 28, 2024
-        // /*
-        theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
-        theInstallerCertPem += "MIIB1TCCAXugAwIBAgIDDhqDMAoGCCqGSM49BAMCMHExJjAkBgNVBAMMHVRocmVh\n";
-        theInstallerCertPem += "ZCBDZXJ0aWZpY2F0aW9uIERldmljZUNBMRkwFwYDVQQKDBBUaHJlYWQgR3JvdXAg\n";
-        theInstallerCertPem += "SW5jMRIwEAYDVQQHDAlTYW4gUmFtb24xCzAJBgNVBAgMAkNBMQswCQYDVQQGEwJV\n";
-        theInstallerCertPem += "UzAeFw0yNDA1MDcwOTM5NDVaFw0yNDA1MjEwOTM5NDVaMDoxHzAdBgNVBAMMFlRD\n";
-        theInstallerCertPem += "QVQgRXhhbXBsZSBDb21tQ2VydDExFzAVBgNVBAUTDjM1MjMtMTU0My0wMDAxMFkw\n";
-        theInstallerCertPem += "EwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHZq8vhZ816JEhgqe6zZKioMDFbrKEkJl\n";
-        theInstallerCertPem += "nRfSJEdfXZYSS94wUFKHzEHcAY3PU4IPTGnF5pusUE41rJa2n8vC76M5MDcwHwYD\n";
-        theInstallerCertPem += "VR0jBBgwFoAUX6sbKWiIodS0MaiGYefnZlnt+BkwFAYJKwYBBAGC3yoDBAcEBSEB\n";
-        theInstallerCertPem += "AQEBMAoGCCqGSM49BAMCA0gAMEUCIHeEfOOEX3jya2+bJMoGEEcFE56eUOjaz9aV\n";
-        theInstallerCertPem += "Tt1soEG8AiEA0taHGNpGgjE/b4kLW27dd8H+D/H5kNbq9Jlm9ct078Y=\n";
-        theInstallerCertPem += "-----END CERTIFICATE-----\n";
-
-        theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
-        theInstallerCertPrivKeyPem += "MHcCAQEEIPUEbXoKX2i4zyuvq7IRTVIlMpzf3t3pmlLc4uQprrq6oAoGCCqGSM49\n";
-        theInstallerCertPrivKeyPem += "AwEHoUQDQgAEHZq8vhZ816JEhgqe6zZKioMDFbrKEkJlnRfSJEdfXZYSS94wUFKH\n";
-        theInstallerCertPrivKeyPem += "zEHcAY3PU4IPTGnF5pusUE41rJa2n8vC7w==\n";
-        theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
-
-        theCaCertPem += "-----BEGIN CERTIFICATE-----\n";
-        theCaCertPem += "MIICOzCCAeGgAwIBAgIJAKOc2hehOGoBMAoGCCqGSM49BAMCMHExJjAkBgNVBAMM\n";
-        theCaCertPem += "HVRocmVhZCBDZXJ0aWZpY2F0aW9uIERldmljZUNBMRkwFwYDVQQKDBBUaHJlYWQg\n";
-        theCaCertPem += "R3JvdXAgSW5jMRIwEAYDVQQHDAlTYW4gUmFtb24xCzAJBgNVBAgMAkNBMQswCQYD\n";
-        theCaCertPem += "VQQGEwJVUzAeFw0yNDA1MDMyMDAyMThaFw00NDA0MjgyMDAyMThaMHExJjAkBgNV\n";
-        theCaCertPem += "BAMMHVRocmVhZCBDZXJ0aWZpY2F0aW9uIERldmljZUNBMRkwFwYDVQQKDBBUaHJl\n";
-        theCaCertPem += "YWQgR3JvdXAgSW5jMRIwEAYDVQQHDAlTYW4gUmFtb24xCzAJBgNVBAgMAkNBMQsw\n";
-        theCaCertPem += "CQYDVQQGEwJVUzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGy850VBIPTkN3oL\n";
-        theCaCertPem += "x++zIUsZk2k26w4fuieFz9oNvjdb5W14+Yf3mvGWsl4NHyLxqhmamVAR4h7zWRlZ\n";
-        theCaCertPem += "0XyMVpKjYjBgMB4GA1UdEQQXMBWBE3RvbUB0aHJlYWRncm91cC5vcmcwDgYDVR0P\n";
-        theCaCertPem += "AQH/BAQDAgGGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFF+rGyloiKHUtDGo\n";
-        theCaCertPem += "hmHn52ZZ7fgZMAoGCCqGSM49BAMCA0gAMEUCIQCTq1qjPZs9fAJB6ppTXs588Pnu\n";
-        theCaCertPem += "eVFOwC8bd//D99KiHAIgU84kwFHIyDvFqu6y+u1hFqBGsiuTmKwZ2PHhVe/xK1k=\n";
-        theCaCertPem += "-----END CERTIFICATE-----\n";
-        // */
-
-
-        if (theInstallerCert == null || theCaCert == null)
+        if (MauiProgram.CertificateName == "Inventronics")
         {
+            // Inventronics Thread Commissioner Certificate
+            theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
+            theInstallerCertPem += "MIIB5DCCAYqgAwIBAgIBATAKBggqhkjOPQQDAjB2MQswCQYDVQQGEwJERTELMAkG\n";
+            theInstallerCertPem += "A1UECBMCQlkxETAPBgNVBAcTCEdhcmNoaW5nMQswCQYDVQQLEwJEUzEVMBMGA1UE\n";
+            theInstallerCertPem += "ChMMSW52ZW50cm9uaWNzMSMwIQYDVQQDExp3d3cuaW52ZW50cm9uaWNzZ2xvYmFs\n";
+            theInstallerCertPem += "LmNvbTAgFw0yNDA4MTQwOTM0MThaGA8yMTA3MTExNDA5MzQxOFowZzELMAkGA1UE\n";
+            theInstallerCertPem += "BhMCREUxCzAJBgNVBAgTAkJZMREwDwYDVQQHEwhHYXJjaGluZzELMAkGA1UECxMC\n";
+            theInstallerCertPem += "RFMxFTATBgNVBAoTDEludmVudHJvbmljczEUMBIGA1UEAxMLREFMSXAgQWRtaW4w\n";
+            theInstallerCertPem += "WTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAS0V4ZNEenCQxu5QwB/ME5nSl/K8Ack\n";
+            theInstallerCertPem += "Ph0MOcyjzL5o0ssHIJbjoN1/fcX4SLcMSOI78tL0maypFVMAe4Yw41ceoxYwFDAS\n";
+            theInstallerCertPem += "BgkrBgEEAYLfKgMEBQEBIQEBMAoGCCqGSM49BAMCA0gAMEUCIQD4m1YzZi8VFssv\n";
+            theInstallerCertPem += "USjBwH1wEbnEeof82Du63LD4UwkZZgIgVtxQ4O9EU7AtMWxJoy5xbe/7KDoQdsit\n";
+            theInstallerCertPem += "44ARewW1y0M=\n";
+            theInstallerCertPem += "-----END CERTIFICATE-----\n";
+
+            theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
+            theInstallerCertPrivKeyPem += "MHcCAQEEIDCUZ28X4/Gide9cGukZuMW8z7v7TgzjSiTILqtq9CLToAoGCCqGSM49\n";
+            theInstallerCertPrivKeyPem += "AwEHoUQDQgAEtFeGTRHpwkMbuUMAfzBOZ0pfyvAHJD4dDDnMo8y+aNLLByCW46Dd\n";
+            theInstallerCertPrivKeyPem += "f33F+Ei3DEjiO/LS9JmsqRVTAHuGMONXHg==\n";
+            theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
+
+            theCaCertPem += "-----BEGIN CERTIFICATE-----\n";
+            theCaCertPem += "MIICFTCCAbygAwIBAgIIJ/sUSX8TaTkwCgYIKoZIzj0EAwIwdjELMAkGA1UEBhMC\n";
+            theCaCertPem += "REUxCzAJBgNVBAgTAkJZMREwDwYDVQQHEwhHYXJjaGluZzELMAkGA1UECxMCRFMx\n";
+            theCaCertPem += "FTATBgNVBAoTDEludmVudHJvbmljczEjMCEGA1UEAxMad3d3LmludmVudHJvbmlj\n";
+            theCaCertPem += "c2dsb2JhbC5jb20wIBcNMjQwODE0MDkwNDIyWhgPMjEwNzEyMTQwOTA0MjJaMHYx\n";
+            theCaCertPem += "CzAJBgNVBAYTAkRFMQswCQYDVQQIEwJCWTERMA8GA1UEBxMIR2FyY2hpbmcxCzAJ\n";
+            theCaCertPem += "BgNVBAsTAkRTMRUwEwYDVQQKEwxJbnZlbnRyb25pY3MxIzAhBgNVBAMTGnd3dy5p\n";
+            theCaCertPem += "bnZlbnRyb25pY3NnbG9iYWwuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\n";
+            theCaCertPem += "mc1809Ehgb0gY2XrGfH6C2Y/HbBRXXaPa2ZfIIQfsPF85sXdvN/rPOUibLH9tice\n";
+            theCaCertPem += "UxInt/ML/849SuyfHeDctaMyMDAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQU\n";
+            theCaCertPem += "jdzsqNIB5ZFtAyFNPTnH0vPAwwUwCgYIKoZIzj0EAwIDRwAwRAIgIb1mYO4IUj5K\n";
+            theCaCertPem += "ChnIQsSTYNILRSNryGbbdjTEMJ7cbVYCIE5cTWhwq0zcrHGRNgeGW39NQFFStIrF\n";
+            theCaCertPem += "AxzyYGM/Omw+\n";
+            theCaCertPem += "-----END CERTIFICATE-----\n";
+        }
+        else if (MauiProgram.CertificateName == "OT_NCS2.6.0")
+        {
+            // OpenThread Referenz  NCS v2.6.0
+            theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
+            theInstallerCertPem += "MIIB7DCCAZGgAwIBAgIEAQIDBDAKBggqhkjOPQQDAjBvMQswCQYDVQQGEwJYWDEQ\n";
+            theInstallerCertPem += "MA4GA1UECBMHTXlTdGF0ZTEPMA0GA1UEBxMGTXlDaXR5MQ8wDQYDVQQLEwZNeVVu\n";
+            theInstallerCertPem += "aXQxETAPBgNVBAoTCE15VmVuZG9yMRkwFwYDVQQDExB3d3cubXl2ZW5kb3IuY29t\n";
+            theInstallerCertPem += "MB4XDTIzMTAxNjEwMzgyN1oXDTI1MTAxNjEwMzgyN1owdDELMAkGA1UEBhMCWFgx\n";
+            theInstallerCertPem += "EDAOBgNVBAgTB015U3RhdGUxDzANBgNVBAcTBk15Q2l0eTEPMA0GA1UECxMGTXlV\n";
+            theInstallerCertPem += "bml0MREwDwYDVQQKEwhNeVZlbmRvcjEeMBwGA1UEAxMVR2l2ZW5OYW1lIEZhbWls\n";
+            theInstallerCertPem += "aXlOYW1lMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEUb+XQqxo00qRkhpEEVea\n";
+            theInstallerCertPem += "IK7SE9oPH2wg0o/oVSN2uQeFgAK25mTHABIcC6YoSX7j6YsvT0t05C8hbsEshz5C\n";
+            theInstallerCertPem += "U6MWMBQwEgYJKwYBBAGC3yoDBAUBAQEBATAKBggqhkjOPQQDAgNJADBGAiEA3IP7\n";
+            theInstallerCertPem += "K139L48a5hgK2xYlTlo4nGCeXnVjvyZBngFjrE4CIQCx8eo/XK85tGPxsPpD03m2\n";
+            theInstallerCertPem += "93MhOtdDcJhpNnzYcI+OwQ==\n";
+            theInstallerCertPem += "-----END CERTIFICATE-----\n";
+
+            theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
+            theInstallerCertPrivKeyPem += "MHcCAQEEIPHYBsvz+VYNrR/sjCRJml6rvkP/VQzNxK1IXhxzeVzJoAoGCCqGSM49\n";
+            theInstallerCertPrivKeyPem += "AwEHoUQDQgAEUb+XQqxo00qRkhpEEVeaIK7SE9oPH2wg0o/oVSN2uQeFgAK25mTH\n";
+            theInstallerCertPrivKeyPem += "ABIcC6YoSX7j6YsvT0t05C8hbsEshz5CUw==\n";
+            theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
+
+            theCaCertPem += "-----BEGIN CERTIFICATE-----\n";
+            theCaCertPem += "MIICCDCCAa2gAwIBAgIJAIKxygBXoH+5MAoGCCqGSM49BAMCMG8xCzAJBgNVBAYT\n";
+            theCaCertPem += "AlhYMRAwDgYDVQQIEwdNeVN0YXRlMQ8wDQYDVQQHEwZNeUNpdHkxDzANBgNVBAsT\n";
+            theCaCertPem += "Bk15VW5pdDERMA8GA1UEChMITXlWZW5kb3IxGTAXBgNVBAMTEHd3dy5teXZlbmRv\n";
+            theCaCertPem += "ci5jb20wHhcNMjMxMDE2MTAzMzE1WhcNMjYxMDE2MTAzMzE1WjBvMQswCQYDVQQG\n";
+            theCaCertPem += "EwJYWDEQMA4GA1UECBMHTXlTdGF0ZTEPMA0GA1UEBxMGTXlDaXR5MQ8wDQYDVQQL\n";
+            theCaCertPem += "EwZNeVVuaXQxETAPBgNVBAoTCE15VmVuZG9yMRkwFwYDVQQDExB3d3cubXl2ZW5k\n";
+            theCaCertPem += "b3IuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWdyzPAXGKeZY94OhHAWX\n";
+            theCaCertPem += "HzJfQIjGSyaOzlgL9OEFw2SoUDncLKPGwfPAUSfuMyEkzszNDM0HHkBsDLqu4n25\n";
+            theCaCertPem += "/6MyMDAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQU4EynoSw9eDKZEVPkums2\n";
+            theCaCertPem += "IWLAJCowCgYIKoZIzj0EAwIDSQAwRgIhAMYGGL9xShyE6P9wEU+MAYF6W3CzdrwV\n";
+            theCaCertPem += "kuerX1encIH2AiEA5rq490NUobM1Au43roxJq1T6Z43LscPVbGZfULD1Jq0=\n";
+            theCaCertPem += "-----END CERTIFICATE-----\n";
+        }
+        else if (MauiProgram.CertificateName == "OT_NCS2.7.0")
+        {
+
+            // OpenThread Referenz  NCS v2.7.0 + OT main Sept 28, 2024 
+            theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
+            theInstallerCertPem += "MIIB1TCCAXugAwIBAgIDDhqDMAoGCCqGSM49BAMCMHExJjAkBgNVBAMMHVRocmVh\n";
+            theInstallerCertPem += "ZCBDZXJ0aWZpY2F0aW9uIERldmljZUNBMRkwFwYDVQQKDBBUaHJlYWQgR3JvdXAg\n";
+            theInstallerCertPem += "SW5jMRIwEAYDVQQHDAlTYW4gUmFtb24xCzAJBgNVBAgMAkNBMQswCQYDVQQGEwJV\n";
+            theInstallerCertPem += "UzAeFw0yNDA1MDcwOTM5NDVaFw0yNDA1MjEwOTM5NDVaMDoxHzAdBgNVBAMMFlRD\n";
+            theInstallerCertPem += "QVQgRXhhbXBsZSBDb21tQ2VydDExFzAVBgNVBAUTDjM1MjMtMTU0My0wMDAxMFkw\n";
+            theInstallerCertPem += "EwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHZq8vhZ816JEhgqe6zZKioMDFbrKEkJl\n";
+            theInstallerCertPem += "nRfSJEdfXZYSS94wUFKHzEHcAY3PU4IPTGnF5pusUE41rJa2n8vC76M5MDcwHwYD\n";
+            theInstallerCertPem += "VR0jBBgwFoAUX6sbKWiIodS0MaiGYefnZlnt+BkwFAYJKwYBBAGC3yoDBAcEBSEB\n";
+            theInstallerCertPem += "AQEBMAoGCCqGSM49BAMCA0gAMEUCIHeEfOOEX3jya2+bJMoGEEcFE56eUOjaz9aV\n";
+            theInstallerCertPem += "Tt1soEG8AiEA0taHGNpGgjE/b4kLW27dd8H+D/H5kNbq9Jlm9ct078Y=\n";
+            theInstallerCertPem += "-----END CERTIFICATE-----\n";
+
+            theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
+            theInstallerCertPrivKeyPem += "MHcCAQEEIPUEbXoKX2i4zyuvq7IRTVIlMpzf3t3pmlLc4uQprrq6oAoGCCqGSM49\n";
+            theInstallerCertPrivKeyPem += "AwEHoUQDQgAEHZq8vhZ816JEhgqe6zZKioMDFbrKEkJlnRfSJEdfXZYSS94wUFKH\n";
+            theInstallerCertPrivKeyPem += "zEHcAY3PU4IPTGnF5pusUE41rJa2n8vC7w==\n";
+            theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
+
+            theCaCertPem += "-----BEGIN CERTIFICATE-----\n";
+            theCaCertPem += "MIICOzCCAeGgAwIBAgIJAKOc2hehOGoBMAoGCCqGSM49BAMCMHExJjAkBgNVBAMM\n";
+            theCaCertPem += "HVRocmVhZCBDZXJ0aWZpY2F0aW9uIERldmljZUNBMRkwFwYDVQQKDBBUaHJlYWQg\n";
+            theCaCertPem += "R3JvdXAgSW5jMRIwEAYDVQQHDAlTYW4gUmFtb24xCzAJBgNVBAgMAkNBMQswCQYD\n";
+            theCaCertPem += "VQQGEwJVUzAeFw0yNDA1MDMyMDAyMThaFw00NDA0MjgyMDAyMThaMHExJjAkBgNV\n";
+            theCaCertPem += "BAMMHVRocmVhZCBDZXJ0aWZpY2F0aW9uIERldmljZUNBMRkwFwYDVQQKDBBUaHJl\n";
+            theCaCertPem += "YWQgR3JvdXAgSW5jMRIwEAYDVQQHDAlTYW4gUmFtb24xCzAJBgNVBAgMAkNBMQsw\n";
+            theCaCertPem += "CQYDVQQGEwJVUzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABGy850VBIPTkN3oL\n";
+            theCaCertPem += "x++zIUsZk2k26w4fuieFz9oNvjdb5W14+Yf3mvGWsl4NHyLxqhmamVAR4h7zWRlZ\n";
+            theCaCertPem += "0XyMVpKjYjBgMB4GA1UdEQQXMBWBE3RvbUB0aHJlYWRncm91cC5vcmcwDgYDVR0P\n";
+            theCaCertPem += "AQH/BAQDAgGGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFF+rGyloiKHUtDGo\n";
+            theCaCertPem += "hmHn52ZZ7fgZMAoGCCqGSM49BAMCA0gAMEUCIQCTq1qjPZs9fAJB6ppTXs588Pnu\n";
+            theCaCertPem += "eVFOwC8bd//D99KiHAIgU84kwFHIyDvFqu6y+u1hFqBGsiuTmKwZ2PHhVe/xK1k=\n";
+            theCaCertPem += "-----END CERTIFICATE-----\n";
+        }
+        else
+        {
+            await DisplayAlert("Alert", "Invalid Certifcate Name", "OK");
+            return;
+        }
+
+
+
+        //if (theInstallerCert == null || theCaCert == null)
+        //{
             ECDsa ecdsa = ECDsa.Create();
             X509Certificate2 tempCert = X509Certificate2.CreateFromPem(theInstallerCertPem);
 
@@ -261,7 +267,7 @@ public partial class TerminalPage : ContentPage
             {
                 theInstallerCert = new X509Certificate2(theInstallerCert.Export(X509ContentType.Pkcs12));
             }
-        }
+        //}
 
         if (sslStream == null)
         {
@@ -482,7 +488,15 @@ public partial class TerminalPage : ContentPage
 
     private void btnDiagnosticGet_Clicked(object sender, EventArgs e)
     {
-        DiagnosticTlvType[] diags = { DiagnosticTlvType.Eui64, DiagnosticTlvType.Mode, DiagnosticTlvType.MacAddress, DiagnosticTlvType.NetworkData, DiagnosticTlvType.IPv6AddressList };
+        //DiagnosticTlvType[] diags = { DiagnosticTlvType.Eui64, DiagnosticTlvType.Mode, DiagnosticTlvType.MacAddress, DiagnosticTlvType.NetworkData, DiagnosticTlvType.IPv6AddressList };
+
+
+        int n = int.Parse(entInput.Text);
+
+        DiagnosticTlvType[] diags = new DiagnosticTlvType[n];
+
+        for (int i = 0; i < n; i++) diags[i] = DiagnosticTlvType.IPv6AddressList;
+
         TcatTlv tlv = new(diags);
         byte[] tlvBytes = tlv.GetBytes();
 

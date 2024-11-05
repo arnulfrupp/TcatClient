@@ -121,8 +121,15 @@ public partial class MainPage : ContentPage
 	}
 
 
-    private async void OnAddDeviceBtn_Clicked(object sender, EventArgs e)
+    private async void OnAddOtDeviceBtn_Clicked(object sender, EventArgs e)
     {
+        MauiProgram.CertificateName = "OT_NCS2.7.0";
+        await Shell.Current.GoToAsync("devicelist");
+    }
+
+    private async void OnAddInvDeviceBtn_Clicked(object sender, EventArgs e)
+    {
+        MauiProgram.CertificateName = "Inventronics";
         await Shell.Current.GoToAsync("devicelist");
     }
 }

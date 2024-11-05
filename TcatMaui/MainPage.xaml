@@ -22,10 +22,17 @@
                 HorizontalOptions="Center" />
             
             <Button
-                x:Name="AddDeviceBtn"
-                Text="Add device to the network"
+                x:Name="AddOtDeviceBtn"
+                Text="Add device to the network with OT certificate"
                 SemanticProperties.Hint="Add uncommissioned device to the Thread network"
-                Clicked="OnAddDeviceBtn_Clicked"
+                Clicked="OnAddOtDeviceBtn_Clicked"
+                HorizontalOptions="Center" />
+
+            <Button
+                x:Name="AddInvDeviceBtn"
+                Text="Add device to the network with Inventronics certificate"
+                SemanticProperties.Hint="Add uncommissioned device to the Thread network"
+                Clicked="OnAddInvDeviceBtn_Clicked"
                 HorizontalOptions="Center" />
 
         </VerticalStackLayout>

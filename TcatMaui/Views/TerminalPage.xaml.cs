@@ -3,19 +3,21 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
-using InTheHand.Bluetooth;
 using TcatMaui.Models;
 using static TcatMaui.Models.TcatTlv;
+using Plugin.BLE.Abstractions.Contracts;
 
 namespace TcatMaui.Views;
 
+/*  -----> Not working with Plugin.Ble because IDevice ist not implementing IConvertable
 [QueryProperty(nameof(SelectedDevice), "SelectedDevice")]
+<----- */
 public partial class TerminalPage : ContentPage
 {
     BleStream bleStream = null;
     SslStream sslStream = null;
     TlvStreamWatcher tlvStreamWatcher = null;
-    BluetoothDevice selectedDevice;
+    IDevice selectedDevice;
     TcatTlvType lastTcatTlvType = TcatTlvType.Undefined;
 
 
@@ -25,7 +27,8 @@ public partial class TerminalPage : ContentPage
     bool bDaliOnOff = false;
 
 
-    public BluetoothDevice SelectedDevice
+    /*  -----> Not working with Plugin.Ble because IDevice ist not implementing IConvertable
+    public IDevice SelectedDevice
     {
         get => selectedDevice;
         set
@@ -34,6 +37,7 @@ public partial class TerminalPage : ContentPage
             OnPropertyChanged();
         }
     }
+    <----- */
 
     public TerminalPage()
     {
@@ -122,6 +126,10 @@ public partial class TerminalPage : ContentPage
         //int len;
 
         //edtTerminal.Text += "--> OnAppearing()" + "\n";
+
+
+        // Dirty qick fix ...    (IDevice ist not dervied from IConvertible)
+        selectedDevice = MauiProgram.SelectedDevice;
 
         bleStream = new BleStream(selectedDevice);
         string theInstallerCertPem = "";

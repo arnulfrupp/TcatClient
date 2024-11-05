@@ -1,6 +1,8 @@
+using Plugin.BLE;
+using Plugin.BLE.Abstractions.Contracts;
+using Plugin.BLE.Abstractions.EventArgs;
 using System.Collections.ObjectModel;
 
-using InTheHand.Bluetooth;
 using TcatMaui.Models;
 
 namespace TcatMaui.Views;
@@ -9,14 +11,16 @@ namespace TcatMaui.Views;
 // [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
 public partial class DeviceListPage : ContentPage
 {
-    internal BluetoothLEScan bleScan = null;
-    internal BleThreadDevice_Portable selectedItem = null;
+    internal IBluetoothLE ble = CrossBluetoothLE.Current;
+    internal IAdapter adapter = CrossBluetoothLE.Current.Adapter;
+
+    internal BleThreadDevice selectedItem = null;
     internal int minRssi = 0;
 
     public const int maxItemsInList = 15;
 
-    ObservableCollection<BleThreadDevice_Portable> VisibleDevices = new ObservableCollection<BleThreadDevice_Portable>();
-    internal ObservableCollection<BleThreadDevice_Portable> GetVisibleDevices { get { return VisibleDevices; } }
+    ObservableCollection<BleThreadDevice> VisibleDevices = new ObservableCollection<BleThreadDevice>();
+    internal ObservableCollection<BleThreadDevice> GetVisibleDevices { get { return VisibleDevices; } }
 
     public DeviceListPage()
     {
@@ -27,63 +31,51 @@ public partial class DeviceListPage : ContentPage
 
     override async protected void OnAppearing()
     {
-        BluetoothLEScanOptions BleScanOptions = new BluetoothLEScanOptions();
-
         // Request user permission on startup
-        bool bleAvailabe = await BleThreadDevice_Portable.GetBleAvailabilityAsync();
 
-        /*
-        if (!bleAvailabe)
-        {
-            await DisplayAlert("Bluetooth", "Bluetooth not available", "Ok");
-            return;
-        }
-        */
-
-        Bluetooth.AdvertisementReceived += Bluetooth_AdvertisementReceived;
-        BleScanOptions.AcceptAllAdvertisements = true;
-
-        bleScan = await Bluetooth.RequestLEScanAsync(BleScanOptions);
-
+        adapter.DeviceDiscovered += Bluetooth_AdvertisementReceived;
+ 
         VisibleDevices.Clear();
         cviCollection.SelectedItem = null;      // No item selected when the page is re-appearing
+
+        await adapter.StartScanningForDevicesAsync();
     }
 
-    override protected void OnDisappearing()
+    override async protected void OnDisappearing()
     {
-        Bluetooth.AdvertisementReceived -= Bluetooth_AdvertisementReceived;
-        bleScan.Stop();
+        adapter.DeviceDiscovered -= Bluetooth_AdvertisementReceived;
+        await adapter.StopScanningForDevicesAsync();
     }
 
 
-    private void Bluetooth_AdvertisementReceived(object sender, BluetoothAdvertisingEvent e)
+    private void Bluetooth_AdvertisementReceived(object sender, DeviceEventArgs e)
     {
         int iFound = -1;
         int iPositionBelowStrogerRssi = 0;
 
         if (e.Device == null) return;    // List only Bluetooth devices
-        if (e.Rssi < minRssi) return;
+        if (e.Device.Rssi < minRssi) return;
         //if (String.IsNullOrEmpty(e.Name)) return;
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
             for (int i = 0; i < VisibleDevices.Count; i++)          // Run the search loop in the main thread to avoid race condition  
             {
-                if (VisibleDevices[i].OperatingSystemBleDevice == null) continue;
+                if (VisibleDevices[i].BluetoothDevice == null) continue;
 
-                if (VisibleDevices[i].OperatingSystemBleDevice.Id == e.Device.Id) iFound = i;
+                if (VisibleDevices[i].BluetoothDevice.Id == e.Device.Id) iFound = i;
 
-                if (VisibleDevices[i].Rssi > e.Rssi) iPositionBelowStrogerRssi = i + 1;
+                if (VisibleDevices[i].Rssi > e.Device.Rssi) iPositionBelowStrogerRssi = i + 1;
             }
 
             if (iFound != -1)
             {
-                VisibleDevices[iFound].Rssi = e.Rssi;
+                VisibleDevices[iFound].Rssi = e.Device.Rssi;
             }
             else if(iPositionBelowStrogerRssi < maxItemsInList)
             {
-                string device_name = String.IsNullOrEmpty(e.Name) ? "<no name: " + e.Device.Id.ToString() + ">": e.Name + " (" + e.Device.Id.ToString() + ")";
-                var theNewDev = new BleThreadDevice_Portable() { Name = device_name, OperatingSystemBleDevice = e.Device, Rssi = e.Rssi };
+                string device_name = String.IsNullOrEmpty(e.Device.Name) ? "<no name: " + e.Device.Id.ToString() + ">": e.Device.Name + " (" + e.Device.Id.ToString() + ")";
+                var theNewDev = new BleThreadDevice() { Name = device_name, BluetoothDevice = e.Device, Rssi = e.Device.Rssi };
 
                 if(VisibleDevices.Count >= maxItemsInList)
                 {
@@ -101,13 +93,15 @@ public partial class DeviceListPage : ContentPage
 
         if (sldRange == null) return;
 
-        Bluetooth.AdvertisementReceived -= Bluetooth_AdvertisementReceived;
-        
+        adapter.DeviceDiscovered -= Bluetooth_AdvertisementReceived;
+
         // iOS needs to restart scan for to show all device
+        /* ---->  to be verified with Plugin.Ble
         if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
         {
-            bleScan.Stop();
+            await adapter.StartScanningForDevicesAsync();
         }
+        <---- */
 
         minRssi = (int)(-sldRange.Value);
 
@@ -119,31 +113,36 @@ public partial class DeviceListPage : ContentPage
             }
         });
 
-        Bluetooth.AdvertisementReceived += Bluetooth_AdvertisementReceived;
+        adapter.DeviceDiscovered += Bluetooth_AdvertisementReceived;
 
         // iOS needs to restart scan for to show all device
+        /* ---->  to be verified with Plugin.Ble
         if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
         {
-            BluetoothLEScanOptions BleScanOptions = new BluetoothLEScanOptions();
-            
-            BleScanOptions.AcceptAllAdvertisements = true;
-            bleScan = await Bluetooth.RequestLEScanAsync(BleScanOptions);
+            await adapter.StartScanningForDevicesAsync();
         }
+        */
     }
 
     private async void cviCollection_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         //int iPreviousSelectedItem = e.PreviousSelection.Count;   
         //int iCurrentSelectedItem = e.CurrentSelection.Count;      //--> not working with iOS (always same index) 
-        selectedItem = e.CurrentSelection.FirstOrDefault() as BleThreadDevice_Portable;
+        selectedItem = e.CurrentSelection.FirstOrDefault() as BleThreadDevice;
 
         if (selectedItem == null) return;
 
+        /*  -----> Not working with Plugin.Ble because IDevice ist not implementing IConvertable
         var navigationParameter = new Dictionary<string, object>
         {
-            { "SelectedDevice", selectedItem.OperatingSystemBleDevice }
+            { "SelectedDevice", selectedItem.BluetoothDevice }
         };
+        <----- */
 
-        await Shell.Current.GoToAsync("terminal", navigationParameter);
+        // Dirty qick fix ...
+        MauiProgram.SelectedDevice = selectedItem.BluetoothDevice;
+
+        //await Shell.Current.GoToAsync("terminal", navigationParameter);
+        await Shell.Current.GoToAsync("terminal");
     }
 }

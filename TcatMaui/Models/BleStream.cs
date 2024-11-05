@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using InTheHand.Bluetooth;
+using Plugin.BLE;
+using Plugin.BLE.Abstractions.Contracts;
+using Plugin.BLE.Abstractions.EventArgs;
 
 
 namespace TcatMaui.Models
@@ -18,30 +19,22 @@ namespace TcatMaui.Models
         private Semaphore readSemaphore;
         private Queue<byte> readQueue;
         private bool connected = false;
+        private bool inRead = false;
         private int maxPacketSize;
 
-        // Sync check
-        private bool inRead = false;
-        private bool inWrite = false;
-        private bool inOnCharacteristicValueChanged = false;
-        
-        private BluetoothDevice bleDevice;
-        private GattCharacteristic writeChar = null;
-        private GattCharacteristic notifyChar = null;
+        private IDevice bleDevice;
+        private ICharacteristic writeChar = null;
+        private ICharacteristic notifyChar = null;
 
-        public StringBuilder log_out = new(); 
-        public int log_byte_count = 0;
-        private int log_direction = 0;              // 0=start, 1=out, -1=in
+        public string log = "I 2022-09-15T15:14:00Z\n";
+        public int log_line = 0;
+        public string log_out = "I 2022-09-15T15:14:00Z\n";
+        public int log_line_out = 0;
 
-        public const int initialMtuSize = 23;       // ATT_MTU
-        public const int gattOverhead = 3;          // Three bytes overhead
-        public const int initialMaxPacketSize = initialMtuSize - gattOverhead;
-        
-
-        public BleStream(BluetoothDevice aDevice)
+        public BleStream(IDevice aDevice)
         {
             bleDevice = aDevice;
-            maxPacketSize = initialMaxPacketSize;
+            maxPacketSize = 20;     // Minimum GATT MTU - 3 byte GATT overhead
 
             readQueue = new Queue<byte>();
             readSemaphore = new Semaphore(0, 1);
@@ -67,12 +60,7 @@ namespace TcatMaui.Models
         {
             int availableBytes;
 
-            if (inRead)
-            {
-                log_out.Append("Simultaneous read requests not supported\n");
-                throw new InvalidOperationException("simultaneous read requests not supported");
-            }
-
+            if (inRead) throw new InvalidOperationException("simultaneous read requests not supported");
             inRead = true;
 
             if (!connected || count == 0) return 0;
@@ -110,32 +98,21 @@ namespace TcatMaui.Models
             throw new NotImplementedException();
         }
 
-        public override async void Write(byte[] buffer, int offset, int count)
+        public override void Write(byte[] buffer, int offset, int count)
         {
-            DateTime dateTime = DateTime.Now;
-
-            // Update maximum packet size
-            maxPacketSize = bleDevice.Gatt.Mtu - gattOverhead;
-
-            // bleDevice.Gatt.Mtu may deliever 0 on Android (see: https://github.com/inthehand/32feet/issues/222)
-            if (maxPacketSize < initialMaxPacketSize) maxPacketSize = initialMaxPacketSize;
-
-            if (inWrite)
+            for (int i = 0; i < count; i++)
             {
-                log_out.Append("Simultaneous write requests not supported\n");
-                throw new InvalidOperationException("simultaneous write requests not supported");
+                log_out += log_line_out.ToString("x6") + " ";
+
+                for (int j = 0; j < 16 && i < count; j++, i++)
+                {
+                    log_out += buffer[offset + i].ToString("x2") + " ";
+                    log_line_out++;
+                }
+
+                log_out += "\n";
             }
 
-            inWrite = true;
-
-            if (log_direction != 1)   // outbound
-            {
-                log_direction = 1;
-                log_byte_count = 0;
-                log_out.Append("O ");
-                log_out.Append(DateTime.Now.ToUniversalTime().ToString("o"));
-                log_out.Append("\n");
-            }
 
             while (count > 0)
             {
@@ -143,38 +120,14 @@ namespace TcatMaui.Models
 
                 Byte[] bytes = new Byte[packetSize];
 
-                if (writeChar == null)
-                {
-                    log_out.Append("writeChar == null\n");
-                    inWrite = false;
-                    return;
-                }
+                if (writeChar == null) return;
 
-                log_out.Append(log_byte_count.ToString("x6"));
-                log_out.Append(" ");
+                for (int i = 0; i < packetSize; i++) bytes[i] = buffer[offset + i];
 
-                for (int i = 0; i < packetSize; i++)
-                {
-                    bytes[i] = buffer[offset + i];
-                    log_out.Append(buffer[offset + i].ToString("x2"));
-                    log_out.Append(" ");
-                    log_byte_count++;
-                }
-
-                log_out.Append("\n");
-
-                await writeChar.WriteValueWithoutResponseAsync(bytes);
-
-                if (DeviceInfo.Current.Platform == DevicePlatform.Android)
-                {
-                    await Task.Delay(50);
-                }
-
+                writeChar.WriteAsync(bytes);
                 count -= packetSize;
                 offset += packetSize;
             }
-
-            inWrite = false;
         }
 
         public override void Close()
@@ -189,20 +142,23 @@ namespace TcatMaui.Models
 
         public async Task<bool> ConnectAsync()
         {
-            GattService primaryService;
-            IReadOnlyList<GattCharacteristic> allChar;
-            BluetoothUuid serviceUuid = BluetoothUuid.FromShortId(0xFFFB);
-            Guid txCharGuid = Guid.Parse("7fddf61f-280a-4773-b448-ba1b8fe0dd69");   // "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-            Guid rxCharGuid = Guid.Parse("6bd10d8b-85a7-4e5a-ba2d-c83558a5f220");   // "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+            IService primaryService;
+            //IReadOnlyList<ICharacteristic> allChar;
+            Guid servicGuid = Guid.Parse("0000FFFB-0000-1000-8000-00805F9B34FB");
+            Guid txCharGuid = Guid.Parse("7fddf61f-280a-4773-b448-ba1b8fe0dd69");
+            Guid rxCharGuid = Guid.Parse("6bd10d8b-85a7-4e5a-ba2d-c83558a5f220");
 
             if (bleDevice == null) return false;
-            bleDevice.GattServerDisconnected += OnGattServerDisconnected;
+            CrossBluetoothLE.Current.Adapter.DeviceDisconnected += OnGattServerDisconnected;
 
-            await bleDevice.Gatt.ConnectAsync();
-            primaryService = await bleDevice.Gatt.GetPrimaryServiceAsync(serviceUuid);
+            await CrossBluetoothLE.Current.Adapter.ConnectToDeviceAsync(bleDevice);
+
+            //var services = await bleDevice.GetServicesAsync();
+
+            primaryService = await bleDevice.GetServiceAsync(servicGuid);
             if (primaryService == null) return false;
 
-            allChar = await primaryService.GetCharacteristicsAsync();    // Needed of iOS
+            //allChar = await primaryService.GetCharacteristicsAsync();
 
             writeChar = await primaryService.GetCharacteristicAsync(rxCharGuid);
             if (writeChar == null) return false;
@@ -210,24 +166,26 @@ namespace TcatMaui.Models
             notifyChar = await primaryService.GetCharacteristicAsync(txCharGuid);
             if (notifyChar == null) return false;
 
-            notifyChar.CharacteristicValueChanged += OnCharacteristicValueChanged;
-            await notifyChar.StartNotificationsAsync();
+            notifyChar.ValueUpdated += OnCharacteristicValueChanged;
+            await notifyChar.StartUpdatesAsync();
 
             connected = true;
 
             return true;
         }
 
-
-        private void Disconnect()
+    
+        private async void Disconnect()
         {
+            if (bleDevice == null) return;
+
             if (notifyChar != null)
             {
-                notifyChar.CharacteristicValueChanged -= OnCharacteristicValueChanged;
+                notifyChar.ValueUpdated -= OnCharacteristicValueChanged;
             }
 
-            bleDevice.GattServerDisconnected -= OnGattServerDisconnected;
-            bleDevice.Gatt.Disconnect();
+            CrossBluetoothLE.Current.Adapter.DeviceDisconnected -= OnGattServerDisconnected;
+            await CrossBluetoothLE.Current.Adapter.DisconnectDeviceAsync(bleDevice);
 
             connected = false;
             readSemaphore.WaitOne(0);
@@ -238,50 +196,29 @@ namespace TcatMaui.Models
         // Callback methods
         // ================
 
-        private void OnGattServerDisconnected(object sender, EventArgs e)
+        private void OnGattServerDisconnected(object sender, DeviceEventArgs e)
         {
             connected = false;
             readSemaphore.WaitOne(0);
             readSemaphore.Release();
         }
 
-        private void OnCharacteristicValueChanged(object sender, GattCharacteristicValueChangedEventArgs e)
+        private void OnCharacteristicValueChanged(object sender, CharacteristicUpdatedEventArgs e)
         {
-            DateTime dateTime = DateTime.UtcNow;
+            log += log_line.ToString("x6") + " ";
+            log_line += e.Characteristic.Value.Length;
 
-            if (inOnCharacteristicValueChanged)
+            foreach (byte b in e.Characteristic.Value)
             {
-                log_out.Append("simultaneous OnCharacteristicValueChanged requests not supported\n");
-                throw new InvalidOperationException("simultaneous OnCharacteristicValueChanged requests not supported");
+                log += b.ToString("x2") + " ";
             }
 
-            inOnCharacteristicValueChanged = true;
-
-            if (log_direction != -1)   // inbound
-            {
-                log_direction = -1;
-                log_byte_count = 0;
-                log_out.Append("I ");
-                log_out.Append(DateTime.Now.ToUniversalTime().ToString("o"));
-                log_out.Append("\n");
-            }
-
-            log_out.Append(log_byte_count.ToString("x6"));
-            log_out.Append(" ");
-
-            foreach (byte b in e.Value)
-            {
-                log_out.Append(b.ToString("x2"));
-                log_out.Append(" ");
-                log_byte_count++;
-            }
-
-            log_out.Append("\n");
+            log += "\n";
 
 
             lock (readQueue)
             {
-                foreach (byte b in e.Value)
+                foreach (byte b in e.Characteristic.Value)
                 {
                     readQueue.Enqueue(b);
                 }
@@ -289,8 +226,6 @@ namespace TcatMaui.Models
                 readSemaphore.WaitOne(0);
                 readSemaphore.Release();
             }
-
-            inOnCharacteristicValueChanged = false;
         }
     }
 }

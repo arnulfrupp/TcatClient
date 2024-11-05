@@ -4,19 +4,15 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.IO;
 using System.Threading.Tasks;
 
+using Plugin.BLE.Abstractions.Contracts;
 
 
 namespace TcatMaui.Models
 {
-    internal abstract class BleThreadDevice : INotifyPropertyChanged
+    internal class BleThreadDevice : INotifyPropertyChanged
     {
-
-        public abstract Task<Stream> Connect(); 
-        public abstract Task Disconnect(); 
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void RaiseProperChanged([CallerMemberName] string caller = "")
@@ -27,11 +23,12 @@ namespace TcatMaui.Models
             }
         }
 
+        public IDevice BluetoothDevice { get; set; }
         public string Name { get; set; }
 
-        public short rssi;
+        public int rssi;
 
-        public short Rssi
+        public int Rssi
         {
             get { return rssi; }
             set

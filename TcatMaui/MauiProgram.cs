@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Plugin.BLE.Abstractions.Contracts;
 
 namespace TcatMaui;
 
@@ -23,4 +24,7 @@ public static class MauiProgram
 	}
 
 	public static String CertificateName = null;
+
+    // Dirty qick fix ...    (IDevice ist not dervied from IConvertible)
+    public static IDevice SelectedDevice = null;
 }

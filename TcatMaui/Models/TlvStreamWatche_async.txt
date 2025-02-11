@@ -1,0 +1,147 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using System.Threading;
+
+namespace TcatMaui.Models
+{
+    internal class TlvStreamWatcher
+    {
+        public delegate void TlvAvailableEventHandler(object sender, TlvAvailableEventArgs e);
+
+        public class TlvAvailableEventArgs : EventArgs
+        {
+            public TlvAvailableEventArgs(TcatTlv aTlv) : base()
+            {
+                Tlv = aTlv;
+            }
+
+            public TcatTlv Tlv { get; private set; }
+        }
+
+        private Stream stream;
+        private readonly byte[] tlvHeaderBuffer = new byte[2];
+        private TcatTlv nextTlv = null;
+        public bool isTimeout = false;
+        private int timeoutTime = 5000;
+
+        public TlvStreamWatcher(Stream stream)
+        {
+            this.stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            WatchNext();
+        }
+
+        public void Detach()
+        {
+            stream = null;
+            nextTlv = null;
+        }
+
+
+        private void ReadDataCallback()
+        {
+            TlvAvailable?.Invoke(this, new TlvAvailableEventArgs(nextTlv));
+            nextTlv = null;
+            WatchNext();
+        }
+
+        private async void ReadExtHeaderCallback()
+        {
+            if (stream == null) return;
+            
+            uint len = ((uint)tlvHeaderBuffer[0]) * 256 + tlvHeaderBuffer[1];
+            nextTlv.Data = new byte[len];
+
+            if (nextTlv.Data.Length > 0)
+            {
+                try
+                {
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    cancellationTokenSource.CancelAfter(timeoutTime);
+                    await stream.ReadAsync(nextTlv.Data, 0, nextTlv.Data.Length, cancellationTokenSource.Token);
+                    ReadDataCallback();
+                }
+                catch
+                {
+                    isTimeout = true;
+                }
+            }
+            else
+            {
+                TlvAvailable?.Invoke(this, new TlvAvailableEventArgs(nextTlv));
+                nextTlv = null;
+                WatchNext();
+            }
+        }
+
+        private async void ReadHeaderCallback()
+        {
+            if (stream == null) return;
+
+            nextTlv = new();
+            nextTlv.Type = (TcatTlv.TcatTlvType)tlvHeaderBuffer[0];
+
+            if (tlvHeaderBuffer[1] != 255)
+            {
+                nextTlv.Data = new byte[tlvHeaderBuffer[1]];
+
+                if (nextTlv.Data.Length > 0)
+                {
+                    try
+                    {
+                        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                        cancellationTokenSource.CancelAfter(timeoutTime);
+                        await stream.ReadAsync(nextTlv.Data, 0, nextTlv.Data.Length, cancellationTokenSource.Token);
+                        ReadDataCallback();
+                    }
+                    catch 
+                    {
+                        isTimeout = true;
+                    }
+                }
+                else
+                {
+                    TlvAvailable?.Invoke(this, new TlvAvailableEventArgs(nextTlv));
+                    nextTlv = null;
+                    WatchNext();
+                }
+            }
+            else
+            {
+                try
+                {
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                    cancellationTokenSource.CancelAfter(timeoutTime);
+                    await stream.ReadAsync(tlvHeaderBuffer, 0, 2, cancellationTokenSource.Token);
+                    ReadExtHeaderCallback();
+                }
+                catch
+                {
+                    isTimeout = true;
+                }
+            }   
+        }
+
+        protected async void WatchNext()
+        {
+            if (stream == null) return;
+
+            try
+            {
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSource.CancelAfter(timeoutTime);
+                await stream.ReadAsync(tlvHeaderBuffer, 0, 2, cancellationTokenSource.Token);
+                ReadHeaderCallback();
+            }
+            catch (TaskCanceledException)
+            {
+                isTimeout = true;
+            }
+        }
+
+        public event TlvAvailableEventHandler TlvAvailable;
+    }
+}

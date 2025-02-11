@@ -344,25 +344,47 @@ public partial class TerminalPage : ContentPage
             }
             else if (e.Tlv.Type == TcatTlvType.ResponseWithPayload)
             {
-                if(lastTcatTlvType == TcatTlvType.GetDiagnosticTlvs)
+                byte?[] bytes;
+
+                switch (lastTcatTlvType)
                 {
-                    byte?[] bytes;
-                    edtTerminal.Text += "Diagnostic response payload len: " + e.Tlv.Data.Length.ToString() + "\n";
+                    case TcatTlvType.GetDiagnosticTlvs:
+                        
+                        edtTerminal.Text += "Diagnostic response payload len: " + e.Tlv.Data.Length.ToString() + "\n";
 
-                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.Eui64);
-                    PrintBytes("EUI64:", bytes);
-                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.Mode);
-                    PrintBytes("Mode:", bytes);
-                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.MacAddress);
-                    PrintBytes("MacAddress:", bytes);
-                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.NetworkData);
-                    PrintBytes("NetworkData:", bytes);
-                    bytes = e.Tlv.FindTlv(DiagnosticTlvType.IPv6AddressList);
-                    PrintBytes("IPv6AddressList:", bytes);
+                        bytes = e.Tlv.FindTlv(DiagnosticTlvType.Eui64);
+                        PrintBytes("EUI64:", bytes);
+                        bytes = e.Tlv.FindTlv(DiagnosticTlvType.Mode);
+                        PrintBytes("Mode:", bytes);
+                        bytes = e.Tlv.FindTlv(DiagnosticTlvType.MacAddress);
+                        PrintBytes("MacAddress:", bytes);
+                        bytes = e.Tlv.FindTlv(DiagnosticTlvType.NetworkData);
+                        PrintBytes("NetworkData:", bytes);
+                        bytes = e.Tlv.FindTlv(DiagnosticTlvType.IPv6AddressList);
+                        PrintBytes("IPv6AddressList:", bytes);
 
-                    lastTcatTlvType = TcatTlvType.Undefined;
+                        lastTcatTlvType = TcatTlvType.Undefined;
+                    break;
+
+                    case TcatTlvType.GetActiveOperationalDataset:
+
+                        edtTerminal.Text += "Dataset payload len: " + e.Tlv.Data.Length.ToString() + "\n";
+
+                        bytes = e.Tlv.FindTlv(MeshCopTlvType.Channel);
+                        PrintBytes("Channel:", bytes);
+                        bytes = e.Tlv.FindTlv(MeshCopTlvType.NetworkKey);
+                        PrintBytes("Network Key:", bytes);
+                        bytes = e.Tlv.FindTlv(MeshCopTlvType.PanId);
+                        PrintBytes("PAN ID:", bytes);
+
+                        lastTcatTlvType = TcatTlvType.Undefined;
+                    break;
+
+
+                    default:
+                        edtTerminal.Text += "Response payload: " + Encoding.Default.GetString(e.Tlv.Data) + "\n";
+                    break;
                 }
-                else edtTerminal.Text += "Response payload: " + Encoding.Default.GetString(e.Tlv.Data) + "\n";
             }
             else if (e.Tlv.Type == TcatTlvType.ResponseWithStatus)
             {
@@ -437,9 +459,7 @@ public partial class TerminalPage : ContentPage
     }
     private void btnDecommission_Clicked(object sender, EventArgs e)
     {
-        byte[] dataset = new byte[] { };
-
-        TcatTlv tlv = new(TcatTlvType.SetActiveOperationalDataset, dataset);
+        TcatTlv tlv = new(TcatTlvType.Decommission);
         byte[] tlvBytes = tlv.GetBytes();
 
         if (sslStream == null) return;
@@ -498,7 +518,6 @@ public partial class TerminalPage : ContentPage
     {
         //DiagnosticTlvType[] diags = { DiagnosticTlvType.Eui64, DiagnosticTlvType.Mode, DiagnosticTlvType.MacAddress, DiagnosticTlvType.NetworkData, DiagnosticTlvType.IPv6AddressList };
 
-
         int n = int.Parse(entInput.Text);
 
         DiagnosticTlvType[] diags = new DiagnosticTlvType[n];
@@ -513,6 +532,30 @@ public partial class TerminalPage : ContentPage
 
         edtTerminal.Text += "Requested Eui64, Mode, MacAddress, NetworkData and IPv6AddressList\n";
         lastTcatTlvType = TcatTlvType.GetDiagnosticTlvs;
+
+        sslStream.Write(tlvBytes, 0, tlvBytes.Length);
+    }
+
+    private void btnExtract_Clicked(object sender, EventArgs e)
+    {
+        TcatTlv tlv = new(TcatTlvType.GetActiveOperationalDataset);
+        byte[] tlvBytes = tlv.GetBytes();
+
+        if (sslStream == null) return;
+        if (!sslStream.IsAuthenticated) return;
+
+        lastTcatTlvType = TcatTlvType.GetActiveOperationalDataset;
+
+        sslStream.Write(tlvBytes, 0, tlvBytes.Length);
+    }
+
+    private void btnGetCommissionerCert_Clicked(object sender, EventArgs e)
+    {
+        TcatTlv tlv = new(TcatTlvType.GetCommissionerCertificate);
+        byte[] tlvBytes = tlv.GetBytes();
+
+        if (sslStream == null) return;
+        if (!sslStream.IsAuthenticated) return;
 
         sslStream.Write(tlvBytes, 0, tlvBytes.Length);
     }

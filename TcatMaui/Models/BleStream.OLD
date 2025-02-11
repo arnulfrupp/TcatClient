@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,10 +16,8 @@ namespace TcatMaui.Models
 
     internal class BleStream : Stream
     {
-        private readonly ManualResetEvent dataReady = new(false);
-        private readonly ConcurrentQueue<byte[]> readQueue = new ConcurrentQueue<byte[]>();
-        byte[] readBuffer = null;
-        int readBufferOffset = 0;
+        private Semaphore readSemaphore;
+        private Queue<byte> readQueue;
         private bool connected = false;
         private bool inRead = false;
         private int maxPacketSize;
@@ -38,6 +35,9 @@ namespace TcatMaui.Models
         {
             bleDevice = aDevice;
             maxPacketSize = 20;     // Minimum GATT MTU - 3 byte GATT overhead
+
+            readQueue = new Queue<byte>();
+            readSemaphore = new Semaphore(0, 1);
         }
 
 
@@ -58,51 +58,34 @@ namespace TcatMaui.Models
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            int result = -1;
+            int availableBytes;
 
             if (inRead) throw new InvalidOperationException("simultaneous read requests not supported");
             inRead = true;
 
-            while (result == -1) 
+            if (!connected || count == 0) return 0;
+
+            lock (readQueue) availableBytes = readQueue.Count;
+
+            while (availableBytes == 0 && connected == true)
             {
-                if (readBuffer != null)
+                readSemaphore.WaitOne();
+                lock (readQueue) availableBytes = readQueue.Count;
+            }
+
+            lock (readQueue)
+            {
+                if (readQueue.Count < count) count = readQueue.Count;
+
+                for (int i = 0; i < count; i++)
                 {
-                    int len = readBuffer.Length - readBufferOffset;
-
-                    if (len > count)
-                    {
-                        Array.Copy(readBuffer, readBufferOffset, buffer, offset, count);
-                        readBufferOffset += count;
-                        result = count;
-                    }
-                    else
-                    {
-                        Array.Copy(readBuffer, readBufferOffset, buffer, offset, len);
-                        readBuffer = null;
-                        result = len;
-                    }
-                }
-                else
-                {
-                    dataReady.WaitOne();
-
-                    readBufferOffset = 0;
-                    if (!readQueue.TryDequeue(out readBuffer))
-                    {
-                        dataReady.Reset();
-                        result = 0;
-                    }
-
-                    if (readQueue.IsEmpty)
-                    {
-                        dataReady.Reset();
-                    }
+                    buffer[offset + i] = readQueue.Dequeue();
                 }
             }
 
             inRead = false;
 
-            return result;
+            return count;
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -205,7 +188,8 @@ namespace TcatMaui.Models
             await CrossBluetoothLE.Current.Adapter.DisconnectDeviceAsync(bleDevice);
 
             connected = false;
-            dataReady.Set();
+            readSemaphore.WaitOne(0);
+            readSemaphore.Release();
         }
 
 
@@ -215,7 +199,8 @@ namespace TcatMaui.Models
         private void OnGattServerDisconnected(object sender, DeviceEventArgs e)
         {
             connected = false;
-            dataReady.Set();
+            readSemaphore.WaitOne(0);
+            readSemaphore.Release();
         }
 
         private void OnCharacteristicValueChanged(object sender, CharacteristicUpdatedEventArgs e)
@@ -229,9 +214,18 @@ namespace TcatMaui.Models
             }
 
             log += "\n";
-   
-            readQueue.Enqueue(e.Characteristic.Value);   
-            dataReady.Set();
+
+
+            lock (readQueue)
+            {
+                foreach (byte b in e.Characteristic.Value)
+                {
+                    readQueue.Enqueue(b);
+                }
+
+                readSemaphore.WaitOne(0);
+                readSemaphore.Release();
+            }
         }
     }
 }

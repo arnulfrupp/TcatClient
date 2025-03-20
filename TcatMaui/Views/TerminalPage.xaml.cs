@@ -140,23 +140,23 @@ public partial class TerminalPage : ContentPage
         {
             // Inventronics Thread Commissioner Certificate
             theInstallerCertPem += "-----BEGIN CERTIFICATE-----\n";
-            theInstallerCertPem += "MIIB5DCCAYqgAwIBAgIBATAKBggqhkjOPQQDAjB2MQswCQYDVQQGEwJERTELMAkG\n";
+            theInstallerCertPem += "MIIB5TCCAYqgAwIBAgIBAjAKBggqhkjOPQQDAjB2MQswCQYDVQQGEwJERTELMAkG\n";
             theInstallerCertPem += "A1UECBMCQlkxETAPBgNVBAcTCEdhcmNoaW5nMQswCQYDVQQLEwJEUzEVMBMGA1UE\n";
             theInstallerCertPem += "ChMMSW52ZW50cm9uaWNzMSMwIQYDVQQDExp3d3cuaW52ZW50cm9uaWNzZ2xvYmFs\n";
-            theInstallerCertPem += "LmNvbTAgFw0yNDA4MTQwOTM0MThaGA8yMTA3MTExNDA5MzQxOFowZzELMAkGA1UE\n";
-            theInstallerCertPem += "BhMCREUxCzAJBgNVBAgTAkJZMREwDwYDVQQHEwhHYXJjaGluZzELMAkGA1UECxMC\n";
-            theInstallerCertPem += "RFMxFTATBgNVBAoTDEludmVudHJvbmljczEUMBIGA1UEAxMLREFMSXAgQWRtaW4w\n";
-            theInstallerCertPem += "WTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAS0V4ZNEenCQxu5QwB/ME5nSl/K8Ack\n";
-            theInstallerCertPem += "Ph0MOcyjzL5o0ssHIJbjoN1/fcX4SLcMSOI78tL0maypFVMAe4Yw41ceoxYwFDAS\n";
-            theInstallerCertPem += "BgkrBgEEAYLfKgMEBQEBIQEBMAoGCCqGSM49BAMCA0gAMEUCIQD4m1YzZi8VFssv\n";
-            theInstallerCertPem += "USjBwH1wEbnEeof82Du63LD4UwkZZgIgVtxQ4O9EU7AtMWxJoy5xbe/7KDoQdsit\n";
-            theInstallerCertPem += "44ARewW1y0M=\n";
+            theInstallerCertPem += "LmNvbTAeFw0yNTAyMTcxOTA3NTJaFw00NTEyMTcxOTA3NTJaMGcxCzAJBgNVBAYT\n";
+            theInstallerCertPem += "AkRFMQswCQYDVQQIEwJCWTERMA8GA1UEBxMIR2FyY2hpbmcxCzAJBgNVBAsTAkRT\n";
+            theInstallerCertPem += "MRUwEwYDVQQKEwxJbnZlbnRyb25pY3MxFDASBgNVBAMTC0RBTElwIEFkbWluMFkw\n";
+            theInstallerCertPem += "EwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExhMyoo7pi/3oylp24PhFh3xWwHRtKraZ\n";
+            theInstallerCertPem += "wcoAeAw3LQzZ+TERYsYyszBiYjUqUGrsAOn3a7LZp/1mRSrGAkIJ0aMYMBYwFAYJ\n";
+            theInstallerCertPem += "KwYBBAGC3yoDBAcEBSEBIQEBMAoGCCqGSM49BAMCA0kAMEYCIQCrmGbQObGRwEGS\n";
+            theInstallerCertPem += "blnfGKk6Nj9qKjN8gu4i5IdiBVsJSwIhAL3GmHR685NKVIMTZrSX2J6TuZrsfnG1\n";
+            theInstallerCertPem += "6gestAhCuVdX\n";
             theInstallerCertPem += "-----END CERTIFICATE-----\n";
 
             theInstallerCertPrivKeyPem += "-----BEGIN EC PRIVATE KEY-----\n";
-            theInstallerCertPrivKeyPem += "MHcCAQEEIDCUZ28X4/Gide9cGukZuMW8z7v7TgzjSiTILqtq9CLToAoGCCqGSM49\n";
-            theInstallerCertPrivKeyPem += "AwEHoUQDQgAEtFeGTRHpwkMbuUMAfzBOZ0pfyvAHJD4dDDnMo8y+aNLLByCW46Dd\n";
-            theInstallerCertPrivKeyPem += "f33F+Ei3DEjiO/LS9JmsqRVTAHuGMONXHg==\n";
+            theInstallerCertPrivKeyPem += "MHcCAQEEIBop023cmJniUCe5hHftDEy4ujIBM7jf3msrMw1tNgAMoAoGCCqGSM49\n";
+            theInstallerCertPrivKeyPem += "AwEHoUQDQgAExhMyoo7pi/3oylp24PhFh3xWwHRtKraZwcoAeAw3LQzZ+TERYsYy\n";
+            theInstallerCertPrivKeyPem += "szBiYjUqUGrsAOn3a7LZp/1mRSrGAkIJ0Q==\n";
             theInstallerCertPrivKeyPem += "-----END EC PRIVATE KEY-----\n";
 
             theCaCertPem += "-----BEGIN CERTIFICATE-----\n";
@@ -173,6 +173,7 @@ public partial class TerminalPage : ContentPage
             theCaCertPem += "ChnIQsSTYNILRSNryGbbdjTEMJ7cbVYCIE5cTWhwq0zcrHGRNgeGW39NQFFStIrF\n";
             theCaCertPem += "AxzyYGM/Omw+\n";
             theCaCertPem += "-----END CERTIFICATE-----\n";
+
         }
         else if (MauiProgram.CertificateName == "OT_NCS2.6.0")
         {
@@ -516,13 +517,14 @@ public partial class TerminalPage : ContentPage
 
     private void btnDiagnosticGet_Clicked(object sender, EventArgs e)
     {
-        //DiagnosticTlvType[] diags = { DiagnosticTlvType.Eui64, DiagnosticTlvType.Mode, DiagnosticTlvType.MacAddress, DiagnosticTlvType.NetworkData, DiagnosticTlvType.IPv6AddressList };
+        DiagnosticTlvType[] diags = { DiagnosticTlvType.Eui64, DiagnosticTlvType.Mode, DiagnosticTlvType.MacAddress, DiagnosticTlvType.NetworkData, DiagnosticTlvType.IPv6AddressList };
 
-        int n = int.Parse(entInput.Text);
+        /*int n = int.Parse(entInput.Text);
 
         DiagnosticTlvType[] diags = new DiagnosticTlvType[n];
 
         for (int i = 0; i < n; i++) diags[i] = DiagnosticTlvType.IPv6AddressList;
+        */  
 
         TcatTlv tlv = new(diags);
         byte[] tlvBytes = tlv.GetBytes();

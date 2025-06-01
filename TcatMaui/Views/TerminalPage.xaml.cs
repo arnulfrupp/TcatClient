@@ -334,7 +334,7 @@ public partial class TerminalPage : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(async () =>
         {
-            if (e.Tlv.Type == TcatTlvType.SendApplicationData)
+            if (e.Tlv.Type == TcatTlvType.SendApplicationData2)   // Thread 1.3 Leagacy
             {
                 string s = Encoding.Default.GetString(e.Tlv.Data);
                 
@@ -381,6 +381,11 @@ public partial class TerminalPage : ContentPage
                         lastTcatTlvType = TcatTlvType.Undefined;
                     break;
 
+                    case TcatTlvType.SendVendorSpecificData:
+                        string s = Encoding.Default.GetString(e.Tlv.Data);
+                        edtTerminal.Text += s;
+                    break;
+
 
                     default:
                         edtTerminal.Text += "Response payload: " + Encoding.Default.GetString(e.Tlv.Data) + "\n";
@@ -414,7 +419,8 @@ public partial class TerminalPage : ContentPage
 
     private void btnEnter_Clicked(object sender, EventArgs e)
     {
-        TcatTlv tlv = new(TcatTlv.TcatTlvType.SendApplicationData, Encoding.ASCII.GetBytes(entInput.Text));
+        //TcatTlv tlv = new(TcatTlv.TcatTlvType.SendVendorSpecificData, Encoding.ASCII.GetBytes(entInput.Text));
+        TcatTlv tlv = new(TcatTlv.TcatTlvType.SendApplicationData2, Encoding.ASCII.GetBytes(entInput.Text));
         byte[] tlvBytes = tlv.GetBytes();  
 
         if (sslStream == null) return;
@@ -504,7 +510,7 @@ public partial class TerminalPage : ContentPage
 
         bDaliOnOff = !bDaliOnOff;
 
-        TcatTlv tlv = new(TcatTlv.TcatTlvType.SendApplicationData, Encoding.ASCII.GetBytes(cmd));
+        TcatTlv tlv = new(TcatTlv.TcatTlvType.SendVendorSpecificData, Encoding.ASCII.GetBytes(cmd));
         byte[] tlvBytes = tlv.GetBytes();
 
         if (sslStream == null) return;

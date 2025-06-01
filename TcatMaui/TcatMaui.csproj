@@ -39,8 +39,8 @@
 		<GenerateTestArtifacts>True</GenerateTestArtifacts>
 		<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
 		<AppInstallerUri>https://1drv.ms/f/s!Avz-rEdfSTvBjZAwopWrsEr4SPNwHA%3fe=DFo46n</AppInstallerUri>
-		<PackageCertificateThumbprint>476E21D975747C3CE39BDB77A6B250275D156E71</PackageCertificateThumbprint>
 		<DefaultLanguage>en</DefaultLanguage>
+		<PackageCertificateKeyFile>TcatMaui_TemporaryKey.pfx</PackageCertificateKeyFile>
 		
 	</PropertyGroup>
 

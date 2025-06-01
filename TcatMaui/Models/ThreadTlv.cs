@@ -47,9 +47,13 @@ namespace TcatMaui.Models
             Decommission                    = 96,   // TCAT decommission request TLV
 
             // Command Class Application
-            SelectApplicationLayerUdp       = 128,  // TCAT select UDP protocol application layer request TLV
-            SelectApplicationLayerTcp       = 129,  // TCAT select TCP protocol application layer request TLV
-            SendApplicationData             = 130,  // TCAT send application data TLV
+            GatApplicationLayers            = 128,  // TCAT get application layer service namea request TLV
+            SendApplicationData1            = 129,  // TCAT send application data for service #1 TLV
+            SendApplicationData2            = 130,  // TCAT send application data for service #2 TLV
+            SendApplicationData3            = 131,  // TCAT send application data for service #3 TLV
+            SendApplicationData4            = 132,  // TCAT send application data for service #4 TLV
+            SendServiceNameUdp              = 137,  // TCAT get service name UDP sub-TLV (not used as a command) TLV
+            SendServiceNameTcp              = 138,  // TCAT get service name TCP sub-TLV (not used as a command) TLV
             SendVendorSpecificData          = 159,  // TCAT send vendor specific command or data TLV
 
             // Command Class CCM

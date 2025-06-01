@@ -56,6 +56,18 @@ public partial class DeviceListPage : ContentPage
         if (e.Device == null) return;    // List only Bluetooth devices
         if (e.Device.Rssi < minRssi) return;
         //if (String.IsNullOrEmpty(e.Name)) return;
+        if (e.Device.AdvertisementRecords.Count() < 2) return;
+        if (e.Device.AdvertisementRecords[0].Data.Count() < 1) return;
+        if (e.Device.AdvertisementRecords[1].Data.Count() < 2) return;
+
+        if (e.Device.AdvertisementRecords[0].Type != Plugin.BLE.Abstractions.AdvertisementRecordType.Flags) return;
+        if (e.Device.AdvertisementRecords[0].Data[0] != 6) return;
+        if (e.Device.AdvertisementRecords[1].Type != Plugin.BLE.Abstractions.AdvertisementRecordType.ServiceData) return;
+        if (e.Device.AdvertisementRecords[1].Data[0] != 251) return;
+        if (e.Device.AdvertisementRecords[1].Data[1] != 255) return;
+
+        //string device_name = e.Device.AdvertisementRecords[0].Type.ToString() + ":" + e.Device.AdvertisementRecords[0].Data[0] + ", " + e.Device.AdvertisementRecords[1].Type.ToString() + ":" + e.Device.AdvertisementRecords[1].Data[0] + "," + e.Device.AdvertisementRecords[1].Data[1];
+        string device_name = String.IsNullOrEmpty(e.Device.Name) ? "<no name: " + e.Device.Id.ToString() + ">" : e.Device.Name + " (" + e.Device.Id.ToString() + ")";
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
@@ -74,7 +86,6 @@ public partial class DeviceListPage : ContentPage
             }
             else if(iPositionBelowStrogerRssi < maxItemsInList)
             {
-                string device_name = String.IsNullOrEmpty(e.Device.Name) ? "<no name: " + e.Device.Id.ToString() + ">": e.Device.Name + " (" + e.Device.Id.ToString() + ")";
                 var theNewDev = new BleThreadDevice() { Name = device_name, BluetoothDevice = e.Device, Rssi = e.Device.Rssi };
 
                 if(VisibleDevices.Count >= maxItemsInList)
